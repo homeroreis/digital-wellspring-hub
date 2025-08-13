@@ -110,6 +110,78 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_description: string
+          achievement_name: string
+          achievement_type: string
+          created_at: string
+          earned_at: string
+          id: string
+          points_awarded: number
+          user_id: string
+        }
+        Insert: {
+          achievement_description: string
+          achievement_name: string
+          achievement_type: string
+          created_at?: string
+          earned_at?: string
+          id?: string
+          points_awarded?: number
+          user_id: string
+        }
+        Update: {
+          achievement_description?: string
+          achievement_name?: string
+          achievement_type?: string
+          created_at?: string
+          earned_at?: string
+          id?: string
+          points_awarded?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_activity_progress: {
+        Row: {
+          activity_index: number
+          activity_title: string
+          activity_type: string
+          completed_at: string
+          created_at: string
+          day_number: number
+          id: string
+          points_earned: number
+          track_slug: string
+          user_id: string
+        }
+        Insert: {
+          activity_index: number
+          activity_title: string
+          activity_type: string
+          completed_at?: string
+          created_at?: string
+          day_number: number
+          id?: string
+          points_earned?: number
+          track_slug: string
+          user_id: string
+        }
+        Update: {
+          activity_index?: number
+          activity_title?: string
+          activity_type?: string
+          completed_at?: string
+          created_at?: string
+          day_number?: number
+          id?: string
+          points_earned?: number
+          track_slug?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           created_at: string
@@ -152,12 +224,67 @@ export type Database = {
         }
         Relationships: []
       }
+      user_track_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_day: number
+          id: string
+          is_active: boolean
+          last_activity_at: string
+          level_number: number
+          started_at: string
+          streak_days: number
+          total_points: number
+          track_slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_day?: number
+          id?: string
+          is_active?: boolean
+          last_activity_at?: string
+          level_number?: number
+          started_at?: string
+          streak_days?: number
+          total_points?: number
+          track_slug: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_day?: number
+          id?: string
+          is_active?: boolean
+          last_activity_at?: string
+          level_number?: number
+          started_at?: string
+          streak_days?: number
+          total_points?: number
+          track_slug?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_user_level: {
+        Args: { total_points: number }
+        Returns: number
+      }
+      check_and_award_achievements: {
+        Args: { p_user_id: string; p_track_slug: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
