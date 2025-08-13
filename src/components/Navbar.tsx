@@ -1,5 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { to: "/", label: "Início" },
@@ -11,6 +13,14 @@ const navItems = [
 ];
 
 const Navbar = () => {
+  const [hasSession, setHasSession] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setHasSession(!!session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setHasSession(!!session));
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <header className="w-full border-b bg-card/80 backdrop-blur">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
@@ -46,6 +56,15 @@ const Navbar = () => {
           <Button asChild variant="elevated" size="sm">
             <Link to="/test" aria-label="Começar teste">Fazer Teste</Link>
           </Button>
+          {hasSession ? (
+            <Button size="sm" variant="outline" onClick={async () => { await supabase.auth.signOut(); }}>
+              Sair
+            </Button>
+          ) : (
+            <Button asChild size="sm" variant="outline">
+              <Link to="/auth">Entrar</Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>

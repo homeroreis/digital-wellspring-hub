@@ -12,6 +12,7 @@ import ProgramDetail from "./pages/ProgramDetail";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/test" element={<Test />} />
             <Route path="/programs" element={<Programs />} />
             <Route path="/programs/:slug" element={<ProgramDetail />} />

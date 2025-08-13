@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      questionnaire_results: {
+        Row: {
+          answers: Json
+          comportamento_score: number
+          created_at: string
+          espiritual_score: number
+          id: string
+          relacoes_score: number
+          total_score: number
+          total_time_spent: number
+          user_id: string
+          vida_cotidiana_score: number
+        }
+        Insert: {
+          answers: Json
+          comportamento_score?: number
+          created_at?: string
+          espiritual_score?: number
+          id?: string
+          relacoes_score?: number
+          total_score: number
+          total_time_spent?: number
+          user_id: string
+          vida_cotidiana_score?: number
+        }
+        Update: {
+          answers?: Json
+          comportamento_score?: number
+          created_at?: string
+          espiritual_score?: number
+          id?: string
+          relacoes_score?: number
+          total_score?: number
+          total_time_spent?: number
+          user_id?: string
+          vida_cotidiana_score?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
