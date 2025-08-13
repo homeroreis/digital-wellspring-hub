@@ -13,6 +13,9 @@ import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import Gamification from "./pages/Gamification";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +32,9 @@ const App = () => (
             <Route path="/test" element={<Test />} />
             <Route path="/programs" element={<Programs />} />
             <Route path="/programs/:slug" element={<ProgramDetail />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/gamification" element={<Gamification />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
