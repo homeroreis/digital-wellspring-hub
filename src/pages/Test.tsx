@@ -19,6 +19,18 @@ const questions = [
   "Verifico as redes sociais repetidamente ao longo do dia.",
   "Já tentei reduzir o uso e não consegui por muito tempo.",
   "Me distraio facilmente do que estou fazendo por causa do celular.",
+  "Uso o celular durante refeições ou conversas com outras pessoas.",
+  "Sinto que perco a noção do tempo quando estou no celular.",
+  "Adio tarefas importantes por causa do uso do celular.",
+  "Uso o celular enquanto dirijo, atravesso a rua ou em outras situações de risco.",
+  "Sinto necessidade de checar o celular logo ao acordar.",
+  "Fico checando o celular mesmo quando não há notificações.",
+  "Comparo minha vida com a dos outros nas redes sociais e me sinto pior.",
+  "Tenho dores no pescoço, olhos cansados ou dores nas mãos por uso excessivo.",
+  "Meu desempenho no trabalho/estudos já foi prejudicado pelo uso do celular.",
+  "Já recebi comentários de familiares/amigos sobre meu uso excessivo.",
+  "Uso o celular para lidar com emoções difíceis (tédio, tristeza, ansiedade).",
+  "Sinto que o celular controla minha rotina mais do que eu controlo o celular.",
 ];
 
 const options = [
@@ -46,12 +58,20 @@ const currentScore = useMemo(
   [answers]
 );
 const progress = Math.round((Object.keys(answers).length / questions.length) * 100);
+const scorePercent = currentScore / maxScore;
 
-  const recommendation = useMemo(() => {
-    if (currentScore <= 7) return { slug: "liberdade", title: "Trilha Liberdade" };
-    if (currentScore <= 16) return { slug: "equilibrio", title: "Trilha Equilíbrio" };
-    return { slug: "renovacao", title: "Trilha Renovação" };
-  }, [currentScore]);
+// Paginação de perguntas
+const pageSize = 5;
+const [page, setPage] = useState(0);
+const totalPages = Math.ceil(questions.length / pageSize);
+const startIndex = page * pageSize;
+const displayedQuestions = questions.slice(startIndex, startIndex + pageSize);
+
+const recommendation = useMemo(() => {
+  if (scorePercent <= 0.29) return { slug: "liberdade", title: "Trilha Liberdade" };
+  if (scorePercent <= 0.67) return { slug: "equilibrio", title: "Trilha Equilíbrio" };
+  return { slug: "renovacao", title: "Trilha Renovação" };
+}, [scorePercent]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +85,7 @@ const progress = Math.round((Object.keys(answers).length / questions.length) * 1
         <title>Teste de Dependência de Smartphone</title>
         <meta
           name="description"
-          content="Responda 8 perguntas e descubra seu nível de dependência do smartphone com recomendação de trilha."
+          content="Responda 20 perguntas e descubra seu nível de dependência do smartphone com recomendação de trilha."
         />
         <link rel="canonical" href={window.location.origin + "/test"} />
       </Helmet>
@@ -86,45 +106,67 @@ const progress = Math.round((Object.keys(answers).length / questions.length) * 1
             <CardContent>
 <div className="mb-6 sticky top-0 z-10 bg-card/80 backdrop-blur rounded-md p-3 border">
   <Progress value={progress} className="h-2" />
-  <p className="mt-2 text-sm text-muted-foreground">
-    {Object.keys(answers).length} de {questions.length} respondidas — {progress}%
-  </p>
+  <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
+    <p>
+      {Object.keys(answers).length} de {questions.length} respondidas — {progress}%
+    </p>
+    <p>
+      Bloco {page + 1} de {totalPages}
+    </p>
+  </div>
 </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {questions.map((q, idx) => (
-                  <div key={idx} className="space-y-3 animate-fade-in">
-                    <p className="font-medium">{idx + 1}. {q}</p>
-                    <RadioGroup
-                      value={answers[idx]?.toString() ?? ""}
-                      onValueChange={(val) =>
-                        setAnswers((prev) => ({ ...prev, [idx]: Number(val) }))
-                      }
-                      className="grid grid-cols-2 md:grid-cols-4 gap-3"
-                    >
-                      {options.map((opt) => (
-                          <div key={opt.value} className={`flex items-center space-x-2 bg-card p-2 rounded-md border transition-smooth ${answers[idx] === opt.value ? "border-primary bg-primary/10" : ""}`}>
-                          <RadioGroupItem id={`q${idx}-${opt.value}`} value={String(opt.value)} />
-                          <Label htmlFor={`q${idx}-${opt.value}`}>{opt.label}</Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  </div>
-                ))}
+<form onSubmit={handleSubmit} className="space-y-6">
+  {displayedQuestions.map((q, idx) => {
+    const globalIdx = startIndex + idx;
+    return (
+      <div key={globalIdx} className="space-y-3 animate-fade-in">
+        <p className="font-medium">{globalIdx + 1}. {q}</p>
+        <RadioGroup
+          value={answers[globalIdx]?.toString() ?? ""}
+          onValueChange={(val) =>
+            setAnswers((prev) => ({ ...prev, [globalIdx]: Number(val) }))
+          }
+          className="grid grid-cols-2 md:grid-cols-4 gap-3"
+        >
+          {options.map((opt) => (
+            <div key={opt.value} className={`flex items-center space-x-2 bg-card p-2 rounded-md border transition-smooth ${answers[globalIdx] === opt.value ? "border-primary bg-primary/10" : ""}`}>
+              <RadioGroupItem id={`q${globalIdx}-${opt.value}`} value={String(opt.value)} />
+              <Label htmlFor={`q${globalIdx}-${opt.value}`}>{opt.label}</Label>
+            </div>
+          ))}
+        </RadioGroup>
+      </div>
+    );
+  })}
 
-                <div className="pt-2 flex items-center justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => { setAnswers({}); setShowResult(false); }}
-                  >
-                    Limpar respostas
-                  </Button>
-                  <Button type="submit" disabled={Object.keys(answers).length < questions.length}>
-                    Ver resultado <ArrowRight className="ml-2 size-4" />
-                  </Button>
-                </div>
-              </form>
+  <div className="pt-2 flex items-center justify-between">
+    <Button
+      type="button"
+      variant="outline"
+      onClick={() => { setAnswers({}); setShowResult(false); setPage(0); }}
+    >
+      Limpar respostas
+    </Button>
+
+    <div className="flex items-center gap-2">
+      {page > 0 && (
+        <Button type="button" variant="outline" onClick={() => setPage((p) => p - 1)}>
+          Anterior
+        </Button>
+      )}
+      {page < totalPages - 1 ? (
+        <Button type="button" onClick={() => setPage((p) => p + 1)}>
+          Próximo
+        </Button>
+      ) : (
+        <Button type="submit" disabled={Object.keys(answers).length < questions.length}>
+          Ver resultado <ArrowRight className="ml-2 size-4" />
+        </Button>
+      )}
+    </div>
+  </div>
+</form>
 
               {showResult && (
                 <div className="mt-8 rounded-lg border p-6 bg-secondary/40">
