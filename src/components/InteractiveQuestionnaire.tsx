@@ -294,7 +294,7 @@ const InteractiveQuestionnaire = () => {
           vida_cotidiana_score: results.categoryScores.vida_cotidiana,
           relacoes_score: results.categoryScores.relacoes,
           espiritual_score: results.categoryScores.espiritual,
-          answers: results.answersData
+          answers: results.answersData as any
         });
       }
       
