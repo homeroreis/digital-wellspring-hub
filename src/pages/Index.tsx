@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Smartphone, AlertTriangle, Heart, Users, TrendingUp, CheckCircle, ArrowRight } from 'lucide-react';
-
+import { AlertTriangle, Heart, TrendingUp, CheckCircle, ArrowRight } from "lucide-react";
+import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
+import Navbar from "@/components/Navbar";
 const Index = () => {
+  const navigate = useNavigate();
   const statistics = [
-    { number: "89%", text: "dos jovens sentem ansiedade sem o celular" },
     { number: "3h47min", text: "tempo médio diário nas redes sociais" },
     { number: "2.617", text: "toques no celular por dia (média)" },
     { number: "76%", text: "verificam o celular nos primeiros 30 min" }
@@ -16,23 +18,17 @@ const Index = () => {
   ];
 
   const handleStartTest = () => {
-    console.log('Iniciando teste...');
+    navigate('/test');
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <header className="w-full border-b bg-card/80 backdrop-blur">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/lovable-uploads/6d26456f-f9b2-44cd-b3ba-16cc677e4993.png" alt="Logotipo Além das Notificações" className="h-10 w-10" loading="lazy" />
-            <span className="text-xl font-bold">Além das Notificações</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline">Como funciona</Button>
-            <Button variant="elevated">Fazer Teste</Button>
-          </div>
-        </div>
-      </header>
+      <Helmet>
+        <title>Além das Notificações — Bem-estar digital</title>
+        <meta name="description" content="Descubra seu nível de dependência do smartphone e siga trilhas personalizadas para bem-estar digital." />
+        <link rel="canonical" href={window.location.origin + "/"} />
+      </Helmet>
+      <Navbar />
 
       <main className="flex-1">
         <section className="bg-hero text-foreground py-20">
