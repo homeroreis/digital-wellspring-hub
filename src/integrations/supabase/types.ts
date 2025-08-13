@@ -14,6 +14,262 @@ export type Database = {
   }
   public: {
     Tables: {
+      content_categories: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      content_media: {
+        Row: {
+          alt_text: string | null
+          caption: string | null
+          content_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          mime_type: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          alt_text?: string | null
+          caption?: string | null
+          content_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          mime_type?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          alt_text?: string | null
+          caption?: string | null
+          content_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          mime_type?: string | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_media_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_tag_relations: {
+        Row: {
+          content_id: string
+          created_at: string
+          id: string
+          tag_id: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          id?: string
+          tag_id: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_tag_relations_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_tag_relations_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "content_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      contents: {
+        Row: {
+          audio_url: string | null
+          author_id: string
+          body: string | null
+          category_id: string | null
+          completion_count: number | null
+          content_type: string
+          created_at: string
+          description: string | null
+          difficulty_level: string | null
+          duration_minutes: number | null
+          excerpt: string | null
+          external_url: string | null
+          featured_image_url: string | null
+          id: string
+          is_featured: boolean | null
+          is_interactive: boolean | null
+          is_premium: boolean | null
+          like_count: number | null
+          published_at: string | null
+          reading_time_minutes: number | null
+          scheduled_at: string | null
+          seo_description: string | null
+          seo_keywords: string[] | null
+          seo_title: string | null
+          slug: string
+          status: string
+          title: string
+          track_types: string[] | null
+          updated_at: string
+          video_url: string | null
+          view_count: number | null
+          youtube_url: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          author_id: string
+          body?: string | null
+          category_id?: string | null
+          completion_count?: number | null
+          content_type: string
+          created_at?: string
+          description?: string | null
+          difficulty_level?: string | null
+          duration_minutes?: number | null
+          excerpt?: string | null
+          external_url?: string | null
+          featured_image_url?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_interactive?: boolean | null
+          is_premium?: boolean | null
+          like_count?: number | null
+          published_at?: string | null
+          reading_time_minutes?: number | null
+          scheduled_at?: string | null
+          seo_description?: string | null
+          seo_keywords?: string[] | null
+          seo_title?: string | null
+          slug: string
+          status?: string
+          title: string
+          track_types?: string[] | null
+          updated_at?: string
+          video_url?: string | null
+          view_count?: number | null
+          youtube_url?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          author_id?: string
+          body?: string | null
+          category_id?: string | null
+          completion_count?: number | null
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          difficulty_level?: string | null
+          duration_minutes?: number | null
+          excerpt?: string | null
+          external_url?: string | null
+          featured_image_url?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_interactive?: boolean | null
+          is_premium?: boolean | null
+          like_count?: number | null
+          published_at?: string | null
+          reading_time_minutes?: number | null
+          scheduled_at?: string | null
+          seo_description?: string | null
+          seo_keywords?: string[] | null
+          seo_title?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          track_types?: string[] | null
+          updated_at?: string
+          video_url?: string | null
+          view_count?: number | null
+          youtube_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contents_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "content_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           accept_terms: boolean
@@ -182,6 +438,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_content_interactions: {
+        Row: {
+          content_id: string
+          created_at: string
+          id: string
+          interaction_type: string
+          interaction_value: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          id?: string
+          interaction_type: string
+          interaction_value?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          interaction_value?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_content_interactions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_preferences: {
         Row: {
           created_at: string
@@ -283,6 +577,14 @@ export type Database = {
       }
       check_and_award_achievements: {
         Args: { p_user_id: string; p_track_slug: string }
+        Returns: undefined
+      }
+      generate_slug: {
+        Args: { title: string }
+        Returns: string
+      }
+      update_content_metrics: {
+        Args: { p_content_id: string; p_metric_type: string }
         Returns: undefined
       }
     }

@@ -13,6 +13,7 @@ import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
+import CMS from "./pages/CMS";
 import Dashboard from "./pages/Dashboard";
 import Gamification from "./pages/Gamification";
 import Admin from "./pages/Admin";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/programs/:slug" element={<ProgramDetail />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/cms" element={<CMS />} />
             <Route path="/gamification" element={<Gamification />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/faq" element={<FAQ />} />

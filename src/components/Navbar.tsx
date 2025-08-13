@@ -60,9 +60,14 @@ const Navbar = () => {
             <Link to="/test" aria-label="Começar teste">Fazer Teste</Link>
           </Button>
           {hasSession ? (
-            <Button size="sm" variant="outline" onClick={async () => { await supabase.auth.signOut(); }}>
-              Sair
-            </Button>
+            <>
+              <Button asChild size="sm" variant="ghost">
+                <Link to="/cms">CMS</Link>
+              </Button>
+              <Button size="sm" variant="outline" onClick={async () => { await supabase.auth.signOut(); }}>
+                Sair
+              </Button>
+            </>
           ) : (
             <Button asChild size="sm" variant="outline">
               <Link to="/auth">Entrar</Link>
