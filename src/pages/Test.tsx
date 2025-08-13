@@ -1,12 +1,13 @@
 import Navbar from "@/components/Navbar";
 import { Helmet } from "react-helmet-async";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, CheckCircle } from "lucide-react";
 
 const questions = [
@@ -30,14 +31,21 @@ const options = [
 const Test = () => {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [showResult, setShowResult] = useState(false);
-  const navigate = useNavigate();
+const navigate = useNavigate();
+useEffect(() => {
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (!session) {
+      navigate("/auth", { replace: true, state: { redirectTo: "/test" } });
+    }
+  });
+}, [navigate]);
 
-  const maxScore = questions.length * 3;
-  const currentScore = useMemo(
-    () => Object.values(answers).reduce((sum, v) => sum + (v ?? 0), 0),
-    [answers]
-  );
-  const progress = Math.round((Object.keys(answers).length / questions.length) * 100);
+const maxScore = questions.length * 3;
+const currentScore = useMemo(
+  () => Object.values(answers).reduce((sum, v) => sum + (v ?? 0), 0),
+  [answers]
+);
+const progress = Math.round((Object.keys(answers).length / questions.length) * 100);
 
   const recommendation = useMemo(() => {
     if (currentScore <= 7) return { slug: "liberdade", title: "Trilha Liberdade" };
@@ -76,16 +84,16 @@ const Test = () => {
               <CardTitle>Questionário</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="mb-6">
-                <Progress value={progress} className="h-2" />
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {Object.keys(answers).length} de {questions.length} respondidas
-                </p>
-              </div>
+<div className="mb-6 sticky top-0 z-10 bg-card/80 backdrop-blur rounded-md p-3 border">
+  <Progress value={progress} className="h-2" />
+  <p className="mt-2 text-sm text-muted-foreground">
+    {Object.keys(answers).length} de {questions.length} respondidas — {progress}%
+  </p>
+</div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {questions.map((q, idx) => (
-                  <div key={idx} className="space-y-3">
+                  <div key={idx} className="space-y-3 animate-fade-in">
                     <p className="font-medium">{idx + 1}. {q}</p>
                     <RadioGroup
                       value={answers[idx]?.toString() ?? ""}
@@ -95,7 +103,7 @@ const Test = () => {
                       className="grid grid-cols-2 md:grid-cols-4 gap-3"
                     >
                       {options.map((opt) => (
-                        <div key={opt.value} className="flex items-center space-x-2 bg-card p-2 rounded-md border">
+                          <div key={opt.value} className={`flex items-center space-x-2 bg-card p-2 rounded-md border transition-smooth ${answers[idx] === opt.value ? "border-primary bg-primary/10" : ""}`}>
                           <RadioGroupItem id={`q${idx}-${opt.value}`} value={String(opt.value)} />
                           <Label htmlFor={`q${idx}-${opt.value}`}>{opt.label}</Label>
                         </div>
@@ -104,7 +112,14 @@ const Test = () => {
                   </div>
                 ))}
 
-                <div className="pt-2 flex justify-end">
+                <div className="pt-2 flex items-center justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => { setAnswers({}); setShowResult(false); }}
+                  >
+                    Limpar respostas
+                  </Button>
                   <Button type="submit" disabled={Object.keys(answers).length < questions.length}>
                     Ver resultado <ArrowRight className="ml-2 size-4" />
                   </Button>
