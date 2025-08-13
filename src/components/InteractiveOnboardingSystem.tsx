@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, CheckCircle, Play, Book, Users, Target, Gift, Sparkles, Heart, Clock, ArrowRight, X, Shield, Zap, Refresh } from 'lucide-react';
+import { ChevronRight, ChevronLeft, CheckCircle, Play, Book, Users, Target, Gift, Sparkles, Heart, Clock, ArrowRight, X, Shield, Zap, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -51,7 +51,7 @@ const InteractiveOnboardingSystem = ({ trackSlug, userId }: OnboardingProps) => 
       
       case 'renovacao':
         return {
-          icon: Refresh,
+          icon: RefreshCw,
           primaryColor: '#8B5CF6',
           description: 'Para transformação profunda de hábitos enraizados',
           focusMessage: 'Reprogramação completa e mudança sustentável',
@@ -230,9 +230,9 @@ const InteractiveOnboardingSystem = ({ trackSlug, userId }: OnboardingProps) => 
     setIsLoading(true);
     
     try {
-      // Salvar preferências do usuário
+      // Salvar preferências do usuário usando query builder genérico
       const { error } = await supabase
-        .from('user_preferences')
+        .from('user_preferences' as any)
         .upsert({
           user_id: userId,
           track_slug: trackSlug,

@@ -298,8 +298,8 @@ const InteractiveQuestionnaire = () => {
         });
       }
       
-      // Redirecionar para trilha recomendada
-      navigate(`/programs/${results.trackType}`);
+      // Redirecionar para onboarding com a trilha recomendada
+      navigate(`/onboarding?track=${results.trackType}`);
       
     } catch (error) {
       console.error('Erro ao salvar resultados:', error);

@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          accept_terms: boolean
+          age: number | null
+          city: string | null
+          created_at: string
+          education_level: string | null
+          full_name: string | null
+          gender: string | null
+          how_found_us: string | null
+          id: string
+          income_range: string | null
+          marital_status: string | null
+          phone: string | null
+          profession: string | null
+          state: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accept_terms?: boolean
+          age?: number | null
+          city?: string | null
+          created_at?: string
+          education_level?: string | null
+          full_name?: string | null
+          gender?: string | null
+          how_found_us?: string | null
+          id?: string
+          income_range?: string | null
+          marital_status?: string | null
+          phone?: string | null
+          profession?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accept_terms?: boolean
+          age?: number | null
+          city?: string | null
+          created_at?: string
+          education_level?: string | null
+          full_name?: string | null
+          gender?: string | null
+          how_found_us?: string | null
+          id?: string
+          income_range?: string | null
+          marital_status?: string | null
+          phone?: string | null
+          profession?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       questionnaire_results: {
         Row: {
           answers: Json
@@ -50,6 +107,48 @@ export type Database = {
           total_time_spent?: number
           user_id?: string
           vida_cotidiana_score?: number
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          experience_level: string | null
+          focus_areas: string[] | null
+          id: string
+          notifications: boolean | null
+          onboarding_completed: boolean | null
+          onboarding_completed_at: string | null
+          reminder_time: string | null
+          track_slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          experience_level?: string | null
+          focus_areas?: string[] | null
+          id?: string
+          notifications?: boolean | null
+          onboarding_completed?: boolean | null
+          onboarding_completed_at?: string | null
+          reminder_time?: string | null
+          track_slug: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          experience_level?: string | null
+          focus_areas?: string[] | null
+          id?: string
+          notifications?: boolean | null
+          onboarding_completed?: boolean | null
+          onboarding_completed_at?: string | null
+          reminder_time?: string | null
+          track_slug?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
