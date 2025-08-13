@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Eye, EyeOff, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation, useNavigate } from "react-router-dom";
+import InteractiveSignupForm from "@/components/auth/InteractiveSignupForm";
 
 const Auth = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -24,13 +25,22 @@ const Auth = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // If already logged in, redirect
+    // Subscribe first, then get the session (prevents race conditions)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        const redirectTo = (location.state as any)?.redirectTo || "/";
+        navigate(redirectTo, { replace: true });
+      }
+    });
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         const redirectTo = (location.state as any)?.redirectTo || "/";
         navigate(redirectTo, { replace: true });
       }
     });
+
+    return () => { subscription.unsubscribe(); };
   }, [navigate, location.state]);
 
   const title = useMemo(() => (mode === "login" ? "Entrar" : "Criar conta"), [mode]);
@@ -155,68 +165,7 @@ const Auth = () => {
                   </TabsContent>
 
                   <TabsContent value="signup">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Nome</Label>
-                        <Input
-                          id="name"
-                          type="text"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          required
-                          autoComplete="name"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-email">E-mail</Label>
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                          autoComplete="email"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-password">Senha</Label>
-                        <div className="relative">
-                          <Input
-                            id="signup-password"
-                            type={showPassword ? "text" : "password"}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            autoComplete="new-password"
-                            className="pr-10"
-                          />
-                          <button
-                            type="button"
-                            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground transition-smooth"
-                            onClick={() => setShowPassword((s) => !s)}
-                          >
-                            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">WhatsApp</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="(11) 99999-9999"
-                        />
-                      </div>
-                      <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? "Processando..." : "Criar conta"}
-                      </Button>
-                      <p className="text-center text-xs text-muted-foreground">
-                        Ao continuar, você concorda com nossos termos de uso e política de privacidade.
-                      </p>
-                    </form>
+                    <InteractiveSignupForm />
                   </TabsContent>
                 </Tabs>
               </CardContent>
