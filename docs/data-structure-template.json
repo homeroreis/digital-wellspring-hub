@@ -1,0 +1,145 @@
+{
+  "track_content_structure": {
+    "liberdade": {
+      "meta": {
+        "slug": "liberdade",
+        "title": "Trilha Liberdade",
+        "duration_days": 7,
+        "level": "Leve",
+        "description": "Para quem já tem bons hábitos e quer fortalecê-los com ações simples e objetivas."
+      },
+      "days": [
+        {
+          "day_number": 1,
+          "title": "Limpeza das Notificações",
+          "description": "Identifique e desative notificações não essenciais",
+          "points": 50,
+          "activities": [
+            {
+              "activity_index": 0,
+              "title": "Audit de Notificações",
+              "type": "video",
+              "content": "https://youtube.com/watch?v=placeholder1",
+              "description": "Aprenda a identificar quais notificações são realmente necessárias",
+              "duration_minutes": 8,
+              "points": 20
+            },
+            {
+              "activity_index": 1,
+              "title": "Configuração Prática",
+              "type": "exercise",
+              "content": "Acesse as configurações do seu celular e desative notificações de apps não essenciais. Mantenha apenas: chamadas, mensagens importantes (família/trabalho), calendário.",
+              "points": 20
+            },
+            {
+              "activity_index": 2,
+              "title": "Reflexão do Dia",
+              "type": "audio",
+              "content": "https://example.com/audio/reflexao-dia1.mp3",
+              "description": "Meditação de 5 minutos sobre consciência digital",
+              "duration_minutes": 5,
+              "points": 10
+            }
+          ]
+        },
+        {
+          "day_number": 2,
+          "title": "Primeira Hora Off-line",
+          "description": "Pratique uma hora sem dispositivos ao acordar",
+          "points": 60,
+          "activities": [
+            {
+              "activity_index": 0,
+              "title": "Preparação da Noite Anterior",
+              "type": "article",
+              "content": "# Preparando sua Manhã Digital-Free\n\n## Por que a primeira hora importa?\n\nA primeira hora do dia define o tom para todo o resto. Quando começamos checando o celular, entramos imediatamente em modo reativo...",
+              "reading_time_minutes": 3,
+              "points": 15
+            },
+            {
+              "activity_index": 1,
+              "title": "Ritual Matinal",
+              "type": "exercise", 
+              "content": "Crie um ritual matinal sem telas: 1) Levante sem pegar o celular, 2) Faça sua higiene pessoal, 3) Tome um café/chá conscientemente, 4) Faça 5 minutos de reflexão ou oração, 5) Só então acesse seus dispositivos.",
+              "points": 30
+            },
+            {
+              "activity_index": 2,
+              "title": "Check-in Semanal",
+              "type": "video",
+              "content": "https://youtube.com/watch?v=placeholder2",
+              "description": "Como manter consistência na rotina digital-free",
+              "duration_minutes": 6,
+              "points": 15
+            }
+          ]
+        }
+      ]
+    },
+    "equilibrio": {
+      "meta": {
+        "slug": "equilibrio", 
+        "title": "Trilha Equilíbrio",
+        "duration_days": 21,
+        "level": "Moderado"
+      },
+      "days": [
+        {
+          "day_number": 1,
+          "title": "Diagnóstico Digital Completo",
+          "description": "Avalie profundamente seus hábitos digitais atuais",
+          "points": 75,
+          "activities": [
+            {
+              "activity_index": 0,
+              "title": "Auditoria de Tempo de Tela",
+              "type": "exercise",
+              "content": "Verifique o tempo de tela da última semana. Anote os 5 apps mais usados e reflita sobre cada um.",
+              "points": 25
+            },
+            {
+              "activity_index": 1,
+              "title": "Questionário de Autoavaliação",
+              "type": "interactive",
+              "content": "Complete o questionário de 20 perguntas sobre dependência digital",
+              "points": 25
+            },
+            {
+              "activity_index": 2,
+              "title": "Plano de Ação Personalizado",
+              "type": "article",
+              "content": "Com base nos resultados, crie seu plano personalizado...",
+              "reading_time_minutes": 8,
+              "points": 25
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "content_types": {
+    "video": {
+      "required_fields": ["youtube_url", "duration_minutes"],
+      "optional_fields": ["transcript", "key_points"]
+    },
+    "audio": {
+      "required_fields": ["audio_url", "duration_minutes"], 
+      "optional_fields": ["transcript"]
+    },
+    "article": {
+      "required_fields": ["content", "reading_time_minutes"],
+      "optional_fields": ["featured_image"]
+    },
+    "exercise": {
+      "required_fields": ["instructions"],
+      "optional_fields": ["completion_criteria", "tips"]
+    },
+    "interactive": {
+      "required_fields": ["interaction_type", "data"],
+      "optional_fields": ["completion_callback"]
+    }
+  },
+  "sample_data_for_mvp": {
+    "note": "Envie 50 atividades neste formato para popular o MVP"
+  }
+}

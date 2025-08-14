@@ -1,0 +1,101 @@
+{
+  "mvp_content": {
+    "instructions": "Substitua os placeholders abaixo com conteúdo real. Use este template para enviar as 50 primeiras atividades.",
+    "template_format": {
+      "track_slug": "liberdade|equilibrio|renovacao",
+      "day_number": 1,
+      "title": "Título da atividade do dia",
+      "description": "Descrição do que o usuário vai aprender/fazer",
+      "points": 50,
+      "activities": [
+        {
+          "activity_index": 0,
+          "title": "Nome da atividade",
+          "type": "video|audio|article|exercise|interactive",
+          "content": "URL ou texto do conteúdo",
+          "description": "Descrição da atividade",
+          "duration_minutes": 5,
+          "points": 20
+        }
+      ]
+    },
+    "sample_activities": [
+      {
+        "track_slug": "liberdade",
+        "day_number": 1,
+        "title": "Limpeza Digital - Notificações",
+        "description": "Aprenda a identificar e desativar notificações desnecessárias",
+        "points": 50,
+        "activities": [
+          {
+            "activity_index": 0,
+            "title": "Vídeo: Audit de Notificações",
+            "type": "video",
+            "content": "PLACEHOLDER_VIDEO_URL_1",
+            "description": "Tutorial passo a passo para auditar suas notificações",
+            "duration_minutes": 8,
+            "points": 20
+          },
+          {
+            "activity_index": 1,
+            "title": "Exercício Prático: Configuração",
+            "type": "exercise",
+            "content": "1. Acesse Configurações > Notificações\n2. Desative apps não essenciais\n3. Mantenha apenas: chamadas, mensagens familiares, calendário\n4. Configure horários de silêncio (22h-7h)",
+            "description": "Configuração prática das notificações do seu dispositivo",
+            "points": 20
+          },
+          {
+            "activity_index": 2,
+            "title": "Áudio: Reflexão Noturna",
+            "type": "audio",
+            "content": "PLACEHOLDER_AUDIO_URL_1",
+            "description": "Meditação guiada sobre consciência digital",
+            "duration_minutes": 5,
+            "points": 10
+          }
+        ]
+      },
+      {
+        "track_slug": "liberdade",
+        "day_number": 2,
+        "title": "Primeira Hora Livre",
+        "description": "Estabeleça uma rotina matinal sem dispositivos digitais",
+        "points": 60,
+        "activities": [
+          {
+            "activity_index": 0,
+            "title": "Artigo: Importância da Manhã",
+            "type": "article",
+            "content": "# A Primeira Hora Define seu Dia\n\n## Por que começar sem telas?\n\nQuando acordamos e imediatamente checamos o celular, entramos em modo reativo. Nosso cérebro passa a responder aos estímulos externos antes mesmo de processar nossos próprios pensamentos e intenções para o dia.\n\n## Benefícios científicos:\n- Reduz cortisol matinal\n- Melhora foco e criatividade\n- Diminui ansiedade\n- Fortalece autodisciplina\n\n## Como implementar:\n1. Deixe o celular fora do quarto\n2. Use um despertador tradicional\n3. Crie um ritual matinal consciente\n4. Permita-se esse tempo de quietude",
+            "description": "Base científica e prática para manhãs sem dispositivos",
+            "reading_time_minutes": 4,
+            "points": 15
+          },
+          {
+            "activity_index": 1,
+            "title": "Exercício: Ritual Matinal",
+            "type": "exercise",
+            "content": "Crie seu ritual matinal personalizado:\n\n**Preparação (noite anterior):**\n- Deixe celular carregando longe da cama\n- Prepare despertador tradicional\n- Deixe água ao lado da cama\n\n**Manhã (primeira hora):**\n1. Acorde sem pegar dispositivos\n2. Beba água\n3. Higiene pessoal consciente\n4. 5-10 min de silêncio/oração/meditação\n5. Café da manhã sem pressa\n6. Defina 3 intenções para o dia\n\n**Só depois:** acesse seus dispositivos",
+            "description": "Estabeleça sua rotina matinal digital-free",
+            "points": 30
+          },
+          {
+            "activity_index": 2,
+            "title": "Vídeo: Mantendo Consistência",
+            "type": "video",
+            "content": "PLACEHOLDER_VIDEO_URL_2",
+            "description": "Estratégias para manter o hábito nos primeiros 30 dias",
+            "duration_minutes": 6,
+            "points": 15
+          }
+        ]
+      }
+    ],
+    "placeholders_info": {
+      "videos": "Use format: PLACEHOLDER_VIDEO_URL_X",
+      "audios": "Use format: PLACEHOLDER_AUDIO_URL_X", 
+      "images": "Use format: PLACEHOLDER_IMAGE_URL_X",
+      "note": "Estes placeholders serão substituídos por URLs reais depois"
+    }
+  }
+}
