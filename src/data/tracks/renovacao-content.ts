@@ -835,6 +835,16 @@ Data: ___/___/___`
 - Carta de agradecimento para apoiadores
 - Presente para si mesmo (não digital)
 - Renovação de compromissos`
+      },
+      bonus: {
+        title: "Medalha de Meio Caminho",
+        content: `Crie certificado especial:
+"✨ 20 DIAS VENCIDOS ✨
+Metade da jornada conquistada!
+Transformação em andamento.
+Falta pouco para a liberdade total!"
+
+Compartilhe conquista com apoiadores`
       }
     },
 
@@ -865,6 +875,25 @@ Data: ___/___/___`
 - Manter rotinas estabelecidas
 - Focar em sustentabilidade
 - Preparar para vida pós-programa`
+      },
+      challenge: {
+        title: "Dia da Nova Normalidade",
+        description: `Viva hoje como sua nova versão:
+- Rotina matinal perfeita
+- Trabalho com foco total
+- Família com presença plena
+- Noite de paz e gratidão
+- Zero impulsos antigos`
+      },
+      bonus: {
+        title: "Ritual de Consolidação",
+        content: `Crie ritual simbólico:
+- Queime lista dos velhos hábitos
+- Plante uma árvore/flor
+- Escreva carta para você do dia 40
+- Comemore com ação de graças
+
+"30 dias = Nova normalidade criada!"`
       }
     },
 
