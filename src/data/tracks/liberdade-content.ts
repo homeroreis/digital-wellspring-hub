@@ -1,0 +1,163 @@
+export const liberdadeContent = [
+  {
+    day_number: 1,
+    title: "DESPERTAR DA GRATIDÃO",
+    objective: "Reconhecer e agradecer pelo equilíbrio atual",
+    devotional_verse: "Em tudo dai graças, porque esta é a vontade de Deus - 1 Tessalonicenses 5:18",
+    devotional_reflection: "A gratidão é o antídoto mais poderoso contra a ansiedade digital. Quando reconhecemos as bênçãos que já temos, deixamos de buscar validação constante nas redes sociais. Hoje, vamos despertar para uma gratidão genuína que não depende de likes ou comentários.",
+    devotional_prayer: "Senhor, obrigado por me dar sabedoria para usar a tecnologia com equilíbrio. Ajuda-me a ser grato pelas bênçãos reais da minha vida, não pelas virtuais. Que eu possa ser instrumento de equilíbrio para outros. Amém.",
+    main_activity_title: "Inventário de Gratidão Analógico",
+    main_activity_content: "**Material:** Papel e caneta (não digital!)\n\n**Passo a passo:**\n1. **Divida a folha em 4 quadrantes:**\n   - Pessoas que amo\n   - Conquistas pessoais\n   - Bênçãos diárias\n   - Dons e talentos\n\n2. **Em cada quadrante, liste 5 itens** (total: 20)\n   - Seja específico (não \"família\", mas \"abraço da minha filha\")\n   - Inclua coisas simples (café da manhã, sol na janela)\n\n3. **Para cada item, escreva uma frase:**\n   - Por que sou grato?\n   - Como isso enriquece minha vida?\n\n4. **Ação concreta:**\n   - Escolha 3 pessoas da lista\n   - Envie mensagem de voz (não texto!) agradecendo\n   - Ou melhor: agradeça pessoalmente",
+    main_challenge_title: "Jejum de Notificações",
+    main_challenge_content: "**Duração:** Das 19h às 22h (3 horas)\n\n**Como fazer:**\n1. Às 19h, coloque o celular no modo \"Não Perturbe\"\n2. Desative TODAS as notificações (exceto chamadas de emergência)\n3. Deixe o celular em outro cômodo\n4. Use esse tempo para:\n   - Jantar em família com conversa\n   - Ler um livro físico\n   - Fazer uma caminhada\n   - Hobby manual (desenho, música, artesanato)\n\n**Check-in:**\nApós as 22h, reflita:\n- Como me senti sem as interrupções?\n- O que fiz com o tempo extra?\n- Perdi algo realmente importante?",
+    bonus_activity_title: "Fotografia Consciente",
+    bonus_activity_content: "**Desafio:** Tire apenas 1 foto hoje\n- Escolha algo verdadeiramente significativo\n- Pense 1 minuto antes de fotografar\n- Não poste imediatamente\n- Guarde para apreciar offline\n\n**Reflexão noturna:**\n\"Hoje eu escolhi viver o momento em vez de documentá-lo\"",
+    max_points: 100,
+    difficulty_level: 1,
+    activities: [
+      { title: "Devocional matinal completo", description: "Leia verso, reflexão e faça oração", points: 20, required: true },
+      { title: "Lista de gratidão criada (20 itens)", description: "Complete os 4 quadrantes", points: 30, required: true },
+      { title: "3 agradecimentos enviados/feitos", description: "Agradeça 3 pessoas da sua lista", points: 20, required: true },
+      { title: "3 horas sem notificações", description: "Das 19h às 22h offline", points: 20, required: true },
+      { title: "1 foto consciente (ou nenhuma)", description: "Fotografe com intenção", points: 10, required: false }
+    ]
+  },
+  {
+    day_number: 2,
+    title: "DOMÍNIO PRÓPRIO",
+    objective: "Fortalecer o autocontrole sobre impulsos digitais",
+    devotional_verse: "Todo atleta que luta, exerce domínio próprio em todas as coisas - 1 Coríntios 9:25",
+    devotional_reflection: "O domínio próprio é um fruto do Espírito. Não é sobre regras rígidas, mas sobre escolhas conscientes. Cada vez que você resiste ao impulso de verificar o celular, está fortalecendo seu \"músculo\" de autocontrole.",
+    devotional_prayer: "Senhor, dá-me força para dominar meus impulsos, não ser dominado por eles. Que a tecnologia seja minha serva, não minha senhora. Ajuda-me a fazer escolhas que honrem a Ti e edifiquem minha vida. Amém.",
+    main_activity_title: "Mapeamento de Impulsos",
+    main_activity_content: "**Parte 1: Consciência (10 min)**\nConfigure um timer a cada hora (das 8h às 20h)\nQuando tocar, anote:\n- O que estava fazendo\n- Quantas vezes pegou o celular\n- Por quê? (tédio, ansiedade, hábito, necessidade real)\n- Sentimento antes e depois\n\n**Parte 2: Análise (10 min)**\nAo final do dia, identifique:\n1. **Horários críticos:** Quando mais pego o celular?\n2. **Gatilhos emocionais:** Que sentimentos precedem o uso?\n3. **Padrões:** Uso mais em que situações?\n4. **Apps ladrões:** Quais apps consomem mais tempo?\n\n**Parte 3: Estratégia**\nPara cada gatilho identificado, crie uma alternativa:\n- Tédio → Livro no bolso\n- Ansiedade → 3 respirações profundas\n- Espera → Observar pessoas, orar\n- Solidão → Ligar para alguém (não mensagem)",
+    main_challenge_title: "Técnica Pomodoro Sagrada",
+    main_challenge_content: "**4 Ciclos de Foco Total:**\n\n**Ciclo 1 - Trabalho/Estudo (25 min)**\n- Celular em outra sala\n- Foco total em uma tarefa\n- Sem música ou distrações\n\n**Pausa (5 min)**\n- Alongamento, água, olhar pela janela\n- SEM CELULAR\n\n**Ciclo 2 - Leitura Bíblica (25 min)**\n- Bíblia física\n- Caderno para anotações\n- Meditação profunda\n\n**Ciclo 3 - Projeto Pessoal (25 min)**\n- Algo criativo ou produtivo\n- Usar as mãos\n- Criar, não consumir\n\n**Ciclo 4 - Conexão Humana (25 min)**\n- Conversa presencial\n- Ligação telefônica (voz)\n- Carta escrita à mão",
+    bonus_activity_title: "Limpeza Digital",
+    bonus_activity_content: "**15 minutos para:**\n1. Deletar 5 apps que não usa há 30 dias\n2. Sair de 3 grupos desnecessários\n3. Cancelar 3 inscrições de email\n4. Organizar tela inicial (só essenciais)\n5. Definir wallpaper calmante\n\n**Mantra do dia:**\n\"Eu controlo a tecnologia, ela não me controla\"",
+    max_points: 100,
+    difficulty_level: 2,
+    activities: [
+      { title: "Mapeamento de impulsos completo", description: "Análise de gatilhos e padrões", points: 25, required: true },
+      { title: "4 ciclos Pomodoro realizados", description: "Foco profundo sem distrações", points: 30, required: true },
+      { title: "Limpeza digital feita", description: "Apps, grupos e organização", points: 20, required: true },
+      { title: "Celular longe durante refeições", description: "Presença nas 3 refeições", points: 15, required: true },
+      { title: "Primeira e última hora sem telas", description: "Acordar e dormir sem celular", points: 10, required: true }
+    ]
+  },
+  {
+    day_number: 3,
+    title: "COMUNHÃO VERDADEIRA",
+    objective: "Priorizar conexões reais sobre virtuais",
+    devotional_verse: "Melhor é serem dois do que um, pois têm melhor paga do seu trabalho - Eclesiastes 4:9",
+    devotional_reflection: "Fomos criados para comunhão real, não virtual. Um abraço vale mais que mil emojis. Um olhar nos olhos transmite mais que mil mensagens. Hoje, vamos resgatar a arte perdida da presença.",
+    devotional_prayer: "Senhor, ajuda-me a estar verdadeiramente presente com as pessoas. Que eu possa olhar nos olhos, ouvir com atenção e abraçar com carinho. Liberta-me da prisão da conexão superficial. Amém.",
+    main_activity_title: "Dia da Presença Plena",
+    main_activity_content: "**Manhã: Café da Manhã Sagrado (15 min)**\n- Mesa posta com carinho\n- Celulares em uma cesta longe\n- Cada pessoa compartilha:\n  - Uma gratidão\n  - Um desafio do dia\n  - Como podem ajudar um ao outro\n- Oração em conjunto\n- Abraço em cada pessoa\n\n**Tarde: Encontro Intencional (15 min)**\nEscolha uma pessoa próxima:\n1. \"Tenho 15 minutos só pra você, vamos conversar?\"\n2. Sente-se frente a frente\n3. Faça perguntas profundas:\n   - \"Como você realmente está?\"\n   - \"O que tem pesado em seu coração?\"\n   - \"Como posso te ajudar essa semana?\"\n4. Escute sem interromper\n5. Ofereça ajuda específica\n6. Ore juntos",
+    main_challenge_title: "5 Atos de Amor Real",
+    main_challenge_content: "Complete todos:\n1. **Carta à mão:** Escreva para alguém distante\n2. **Visita surpresa:** Leve algo para um vizinho\n3. **Ligação de voz:** Para alguém que só recebe mensagens suas\n4. **Ato de serviço:** Faça algo por alguém sem que peçam\n5. **Tempo de qualidade:** 30 min com alguém, sem pressa\n\n**Regra:** Não documente nem poste sobre nenhum desses atos",
+    bonus_activity_title: "Jantar sem Telas",
+    bonus_activity_content: "**Preparação:**\n- Cozinhe algo especial (ou peça, mas com intenção)\n- Mesa arrumada, música ambiente suave\n- Velas ou iluminação aconchegante\n- Celulares em outro cômodo\n\n**Durante o jantar:**\n- Jogo: Cada um conta uma memória feliz\n- Sem pressa - mínimo 45 minutos\n- Sobremesa com conversa\n- Limpeza conjunta com música",
+    max_points: 100,
+    difficulty_level: 2,
+    activities: [
+      { title: "3 refeições sem celular", description: "Presença total durante as refeições", points: 20, required: true },
+      { title: "5 atos de amor completados", description: "Demonstrações concretas de amor", points: 30, required: true },
+      { title: "1 hora de presença plena", description: "Tempo focado em alguém", points: 20, required: true },
+      { title: "Carta escrita e enviada", description: "Comunicação analógica e carinhosa", points: 15, required: true },
+      { title: "Noite em família sem telas", description: "Conexão real no fim do dia", points: 15, required: true }
+    ]
+  },
+  {
+    day_number: 4,
+    title: "SÁBADO DIGITAL",
+    objective: "Experimentar um descanso verdadeiro",
+    devotional_verse: "Lembra-te do dia de sábado, para o santificar - Êxodo 20:8",
+    devotional_reflection: "O sábado é um presente de Deus - 24 horas para desconectar do mundo e reconectar com o Céu. Hoje, mesmo que não seja sábado, vamos praticar um \"sábado digital\" - um descanso sagrado das telas.",
+    devotional_prayer: "Senhor do sábado, ensina-me a descansar em Ti. Que eu encontre paz não no scroll infinito, mas em Tua presença. Ajuda-me a guardar momentos sagrados em minha semana. Amém.",
+    main_activity_title: "Mini Sábado (6 horas)",
+    main_activity_content: "**Preparação (Sexta à noite ou manhã cedo):**\n1. Avise contatos importantes sobre seu \"período offline\"\n2. Configure resposta automática\n3. Prepare atividades analógicas:\n   - Livros físicos\n   - Material para hobbies\n   - Jogos de tabuleiro\n   - Instrumentos musicais\n4. Prepare comida antecipadamente\n\n**Programa do Mini Sábado (14h às 20h):**\n\n**14h - Cerimônia de Abertura**\n- Desligue todos os dispositivos (não só silencioso)\n- Acenda uma vela (símbolo do tempo sagrado)\n- Oração de dedicação\n- Leitura de Salmo 23\n\n**14h30 - Natureza**\n- Caminhada no parque/jardim\n- Observar sem fotografar\n- Coletar elementos naturais (folhas, pedras)\n- Meditação ao ar livre\n\n**16h - Criatividade**\n- Desenho, pintura ou escrita\n- Música (tocar ou cantar)\n- Artesanato ou culinária\n- Jardinagem\n\n**17h30 - Comunhão**\n- Visita a alguém\n- Jogos em família\n- Histórias compartilhadas\n- Lanche especial juntos\n\n**19h30 - Encerramento**\n- Reflexão: O que aprendi?\n- Gratidão: Pelo que sou grato?\n- Compromisso: O que vou manter?\n- Oração final\n- Apagar a vela",
+    main_challenge_title: "Redescobrindo Prazeres Simples",
+    main_challenge_content: "Durante as 6 horas offline, experimente:\n1. **Observação:** 10 min só observando nuvens\n2. **Tato:** Andar descalço na grama\n3. **Audição:** Identificar 10 sons da natureza\n4. **Olfato:** Cheirar flores, temperos, ar fresco\n5. **Paladar:** Comer algo devagar, saboreando\n\n**Descubra:** 3 atividades prazerosas que não exigem telas",
+    bonus_activity_title: "Diário do Sábado Digital",
+    bonus_activity_content: "**No fim do dia, escreva:**\n- Como me senti nas primeiras 2 horas?\n- Que \"coceira digital\" senti?\n- O que fiz em vez de usar telas?\n- Que descobertas fiz sobre mim?\n- O que foi mais difícil?\n- O que foi surpreendentemente bom?\n- Vou repetir? Quando?",
+    max_points: 100,
+    difficulty_level: 3,
+    activities: [
+      { title: "6 horas completamente offline", description: "Desconexão total das 14h às 20h", points: 40, required: true },
+      { title: "3 atividades analógicas novas", description: "Experimente coisas sem tela", points: 20, required: true },
+      { title: "Tempo em natureza (mínimo 1 hora)", description: "Conexão com a criação", points: 15, required: true },
+      { title: "Conexão presencial significativa", description: "Tempo real com pessoas", points: 15, required: true },
+      { title: "Diário reflexivo preenchido", description: "Registre suas descobertas", points: 10, required: true }
+    ]
+  },
+  {
+    day_number: 5,
+    title: "MORDOMIA DO TEMPO",
+    objective: "Tornar-se mordomo fiel do tempo dado por Deus",
+    devotional_verse: "Ensina-nos a contar os nossos dias, para que alcancemos coração sábio - Salmos 90:12",
+    devotional_reflection: "Tempo é o único recurso verdadeiramente não renovável. Cada minuto gasto em scroll sem propósito é um minuto roubado de relacionamentos, crescimento e propósito. Hoje, vamos aprender a investir, não gastar, nosso tempo.",
+    devotional_prayer: "Senhor, Tu és o dono do tempo. Ajuda-me a ser mordomo fiel das horas que me dás. Que eu invista meu tempo em coisas eternas, não em distrações passageiras. Amém.",
+    main_activity_title: "Auditoria Temporal Completa",
+    main_activity_content: "**Parte 1: Realidade Atual (10 min)**\nInstale um app de tracking por 1 dia OU anote manualmente:\n- Tempo em cada app\n- Tempo em cada atividade\n- Crie um gráfico pizza da sua dia\n\n**Choque de Realidade:**\n- Quanto tempo em redes sociais por semana?\n- Quantas horas isso dá por ano?\n- O que poderia ter feito com esse tempo?\n\n**Parte 2: Tempo Ideal (10 min)**\nDesenhe seu dia perfeito:\n- 8h sono\n- X horas trabalho/estudo\n- X horas família\n- X horas crescimento pessoal\n- X horas lazer saudável\n- X horas serviço/ajuda outros\n- X horas com Deus\n\nCompare com a realidade. Onde está a discrepância?\n\n**Parte 3: Plano de Ação (10 min)**\nPara cada hora mal gasta, defina substituição:\n- 1h Instagram → 1h leitura\n- 30min YouTube → 30min exercício\n- 1h jogos → 1h com família\n- 30min notícias → 30min oração/meditação",
+    main_challenge_title: "Dia do Investimento",
+    main_challenge_content: "**Cada hora, faça algo que seja investimento, não gasto:**\n\n**Manhã:**\n- 30 min: Exercício (investir em saúde)\n- 30 min: Leitura/estudo (investir em mente)\n- 30 min: Organização (investir em produtividade)\n\n**Tarde:**\n- 30 min: Skill nova (investir em habilidades)\n- 30 min: Relacionamento (investir em pessoas)\n- 30 min: Projeto pessoal (investir em sonhos)\n\n**Noite:**\n- 30 min: Família (investir em amor)\n- 30 min: Reflexão/diário (investir em autoconhecimento)\n- 30 min: Preparação amanhã (investir em futuro)\n\n**Regra:** Nada de consumo passivo (scroll, vídeos aleatórios, etc.)",
+    bonus_activity_title: "Criando Rituais Produtivos",
+    bonus_activity_content: "**Crie 3 rituais para substituir momentos de tela:**\n\n**Ritual Matinal (em vez de checar celular):**\n1. Agradecer por 3 coisas\n2. Definir 3 prioridades\n3. Ler 1 página inspiracional\n4. Fazer 10 respirações profundas\n5. Tomar água\n\n**Ritual de Transição (chegando em casa):**\n1. Trocar roupa\n2. 5 min de silêncio\n3. Abraçar família\n4. Perguntar sobre o dia\n5. Celular na gaveta\n\n**Ritual Noturno (em vez de scroll na cama):**\n1. Preparar roupa de amanhã\n2. Escrever 3 vitórias do dia\n3. Ler 10 páginas\n4. Orar\n5. Dormir",
+    max_points: 100,
+    difficulty_level: 2,
+    activities: [
+      { title: "Auditoria temporal completa", description: "Análise detalhada do uso do tempo", points: 25, required: true },
+      { title: "4,5 horas de investimento ativo", description: "Atividades que agregam valor", points: 30, required: true },
+      { title: "3 rituais criados e testados", description: "Substitutos para momentos de tela", points: 20, required: true },
+      { title: "Zero tempo em scroll sem propósito", description: "Consumo digital consciente", points: 15, required: true },
+      { title: "Planejamento da semana feito", description: "Organização do tempo futuro", points: 10, required: true }
+    ]
+  },
+  {
+    day_number: 6,
+    title: "TESTEMUNHO DIGITAL",
+    objective: "Usar tecnologia para abençoar, não impressionar",
+    devotional_verse: "Vós sois a luz do mundo; não se pode esconder uma cidade edificada sobre um monte - Mateus 5:14",
+    devotional_reflection: "Sua presença online é um testemunho. Cada post, comentário e compartilhamento reflete seus valores. Hoje, vamos aprender a ser luz no mundo digital sem nos perder nele.",
+    devotional_prayer: "Senhor, faz de mim um influenciador do bem. Que minhas palavras online edifiquem, não destruam. Que meu testemunho digital aponte para Ti, não para mim. Amém.",
+    main_activity_title: "Limpeza e Propósito Digital",
+    main_activity_content: "**Parte 1: Auditoria de Presença (10 min)**\nRevise seus últimos 20 posts/stories:\n- Quantos foram para edificar outros?\n- Quantos foram para autopromoção?\n- Quantos foram reativos/negativos?\n- Quantos agregaram valor real?\n- Que imagem de você eles passam?\n\n**Parte 2: Limpeza (10 min)**\n1. Delete posts que:\n   - Não representam quem você é hoje\n   - Foram feitos por impulso/raiva\n   - Podem ferir alguém\n   - São apenas \"ruído\"\n\n2. Unfollow/mute:\n   - Contas que trazem comparação\n   - Conteúdo que gera ansiedade\n   - Páginas de fofoca/negatividade\n   - Influencers que promovem consumismo\n\n3. Follow/ative notificações:\n   - Conteúdo inspirador\n   - Páginas educativas\n   - Pessoas que admira de verdade\n   - Ministérios/causas importantes\n\n**Parte 3: Missão Digital (5 min)**\nEscreva sua missão para presença online:\n\"Vou usar minhas redes para...\"\n- Encorajar pessoas em dificuldade\n- Compartilhar aprendizados úteis\n- Celebrar outros, não só a mim\n- Ser ponte, não muro\n- Espalhar esperança",
+    main_challenge_title: "7 Atos de Luz Digital",
+    main_challenge_content: "1. **Comentário edificante:** Em 3 posts de amigos (específico, não genérico)\n2. **Mensagem de encorajamento:** Para alguém que está quieto há tempo\n3. **Compartilhar o bem:** Post de alguém que fez algo bom (dar crédito)\n4. **Conteúdo útil:** Compartilhe algo que realmente ajude pessoas\n5. **Reconhecimento público:** Agradeça alguém publicamente\n6. **Conserto:** Peça desculpas se feriu alguém online\n7. **Silêncio sábio:** Não responda aquela provocação\n\n**Regra:** Faça tudo sem esperar retorno (likes, comentários)",
+    bonus_activity_title: "Jejum de Vanidade",
+    bonus_activity_content: "**24 horas sem:**\n- Verificar quantos likes recebeu\n- Postar selfies\n- Stories do que está comendo/fazendo\n- Compartilhar conquistas pessoais\n- Verificar quem viu seus stories\n\n**Em vez disso:**\n- Celebre conquistas dos outros\n- Compartilhe conteúdo útil (não seu)\n- Envie mensagens privadas de apoio\n- Ore por cada pessoa que vier à mente",
+    max_points: 100,
+    difficulty_level: 2,
+    activities: [
+      { title: "Limpeza digital completa", description: "Auditoria e organização da presença online", points: 25, required: true },
+      { title: "7 atos de luz realizados", description: "Impacto positivo no digital", points: 30, required: true },
+      { title: "Missão digital escrita", description: "Propósito claro para redes sociais", points: 15, required: true },
+      { title: "24h sem checar métricas de vaidade", description: "Liberdade da aprovação", points: 15, required: true },
+      { title: "3 pessoas encorajadas diretamente", description: "Mensagens privadas de apoio", points: 15, required: true }
+    ]
+  },
+  {
+    day_number: 7,
+    title: "COMPROMISSO FUTURO",
+    objective: "Criar um plano sustentável de liberdade digital",
+    devotional_verse: "Tudo posso naquele que me fortalece - Filipenses 4:13",
+    devotional_reflection: "Chegamos ao fim desta semana, mas é apenas o começo de uma vida de liberdade digital. Com Cristo, você tem poder para manter limites saudáveis. O segredo não é força de vontade, mas depender dEle diariamente.",
+    devotional_prayer: "Senhor, obrigado por esta semana de aprendizado. Ajuda-me a manter os bons hábitos que desenvolvi. Que eu continue livre, não por regras, mas por amor a Ti e aos outros. Amém.",
+    main_activity_title: "Criando Seu Manifesto Pessoal",
+    main_activity_content: "**Parte 1: Reflexão da Semana (10 min)**\nResponda honestamente:\n1. Qual dia foi mais desafiador? Por quê?\n2. Qual atividade teve maior impacto?\n3. Que hábito ruim foi mais difícil quebrar?\n4. Que hábito bom foi mais fácil criar?\n5. Como me sinto comparado ao Dia 1?\n6. O que minha família notou de diferente?\n7. Que benefícios inesperados descobri?\n\n**Parte 2: Manifesto de Liberdade Digital (15 min)**\n\n**MEU MANIFESTO DE LIBERDADE DIGITAL**\n\nEu, ____________, declaro que:\n\n**VALORES (complete):**\n- Valorizo ________ mais que likes\n- Prefiro ________ a scroll infinito\n- Escolho ________ em vez de FOMO\n\n**LIMITES (defina seus):**\n- Celular proibido: ________ (horários/locais)\n- Tempo máximo em redes: ________ por dia\n- Apps deletados permanentemente: ________\n- Notificações permitidas apenas de: ________\n\n**RITUAIS (mantenha 3):**\n- Manhã: ________\n- Trabalho/Estudo: ________\n- Noite: ________\n\n**SUBSTITUTOS (quando sentir vontade de scroll):**\n- Em casa: ________\n- No trabalho: ________\n- Na espera: ________\n- Quando ansioso: ________\n\n**ACCOUNTABILITY:**\n- Vou prestar contas a: ________\n- Frequência de check-in: ________\n- Consequência se falhar: ________\n- Recompensa se cumprir: ________\n\n**MISSÃO:**\n\"Usarei a tecnologia para ________, não para ________\"\n\n**VERSÍCULO ÂNCORA:**\n\"________\" - ________\n\nAssinatura: ________\nData: ________\n\n**Parte 3: Plano de 30 Dias (5 min)**\n\n**Semana 1-2: Consolidação**\n- Manter todos os hábitos da semana\n- Adicionar: 1 dia offline por semana\n- Accountability check semanal\n\n**Semana 3-4: Expansão**\n- Influenciar 1 pessoa próxima\n- Criar grupo de apoio\n- Desenvolver novo hobby offline\n\n**Mês 2 em diante:**\n- Mentorear alguém na jornada\n- Criar conteúdo sobre liberdade digital\n- Ser exemplo na comunidade",
+    main_challenge_title: "Celebração Offline",
+    main_challenge_content: "**Organize uma celebração real:**\n1. Reúna pessoas importantes\n2. Compartilhe sua jornada de 7 dias\n3. Mostre seu manifesto\n4. Peça apoio contínuo\n5. Celebre com:\n   - Jantar especial\n   - Jogos\n   - Música\n   - Testemunhos\n   - Oração em grupo\n\n**Regra:** Sem fotos para redes sociais. Apenas memórias reais.",
+    bonus_activity_title: "Carta para o Futuro",
+    bonus_activity_content: "**Escreva uma carta para você mesmo daqui 30 dias:**\n\n\"Querido eu do futuro,\n\nHoje completo 7 dias de liberdade digital. Estou me sentindo...\n\nPrometo a você que vou manter...\n\nSei que será difícil quando...\n\nMas vou lembrar que...\n\nSe você estiver lendo isso e tiver falhado, lembre-se...\n\nSe estiver conseguindo, celebre porque...\n\nNão esqueça: você é mais forte que qualquer notificação.\n\nCom amor e fé,\nEu do dia 7\"\n\n**Coloque um lembrete para ler em 30 dias**",
+    max_points: 100,
+    difficulty_level: 3,
+    activities: [
+      { title: "Manifesto completo e assinado", description: "Compromisso pessoal por escrito", points: 30, required: true },
+      { title: "Plano de 30 dias definido", description: "Estratégia de continuidade", points: 25, required: true },
+      { title: "Celebração realizada", description: "Compartilhar conquistas com outros", points: 20, required: true },
+      { title: "Carta para futuro escrita", description: "Mensagem de encorajamento", points: 15, required: true },
+      { title: "3 pessoas convidadas para jornada", description: "Multiplicar o impacto", points: 10, required: true }
+    ]
+  }
+];

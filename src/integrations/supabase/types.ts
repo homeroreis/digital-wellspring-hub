@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -366,6 +366,110 @@ export type Database = {
         }
         Relationships: []
       }
+      track_daily_activities: {
+        Row: {
+          activity_description: string
+          activity_title: string
+          created_at: string
+          daily_content_id: string
+          id: string
+          is_required: boolean
+          points_value: number
+          sort_order: number
+        }
+        Insert: {
+          activity_description: string
+          activity_title: string
+          created_at?: string
+          daily_content_id: string
+          id?: string
+          is_required?: boolean
+          points_value?: number
+          sort_order?: number
+        }
+        Update: {
+          activity_description?: string
+          activity_title?: string
+          created_at?: string
+          daily_content_id?: string
+          id?: string
+          is_required?: boolean
+          points_value?: number
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_daily_activities_daily_content_id_fkey"
+            columns: ["daily_content_id"]
+            isOneToOne: false
+            referencedRelation: "track_daily_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      track_daily_content: {
+        Row: {
+          bonus_activity_content: string | null
+          bonus_activity_title: string | null
+          created_at: string
+          day_number: number
+          devotional_prayer: string
+          devotional_reflection: string
+          devotional_verse: string
+          difficulty_level: number
+          id: string
+          main_activity_content: string
+          main_activity_title: string
+          main_challenge_content: string
+          main_challenge_title: string
+          max_points: number
+          objective: string
+          title: string
+          track_slug: string
+          updated_at: string
+        }
+        Insert: {
+          bonus_activity_content?: string | null
+          bonus_activity_title?: string | null
+          created_at?: string
+          day_number: number
+          devotional_prayer: string
+          devotional_reflection: string
+          devotional_verse: string
+          difficulty_level?: number
+          id?: string
+          main_activity_content: string
+          main_activity_title: string
+          main_challenge_content: string
+          main_challenge_title: string
+          max_points?: number
+          objective: string
+          title: string
+          track_slug: string
+          updated_at?: string
+        }
+        Update: {
+          bonus_activity_content?: string | null
+          bonus_activity_title?: string | null
+          created_at?: string
+          day_number?: number
+          devotional_prayer?: string
+          devotional_reflection?: string
+          devotional_verse?: string
+          difficulty_level?: number
+          id?: string
+          main_activity_content?: string
+          main_activity_title?: string
+          main_challenge_content?: string
+          main_challenge_title?: string
+          max_points?: number
+          objective?: string
+          title?: string
+          track_slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_description: string
@@ -576,7 +680,7 @@ export type Database = {
         Returns: number
       }
       check_and_award_achievements: {
-        Args: { p_user_id: string; p_track_slug: string }
+        Args: { p_track_slug: string; p_user_id: string }
         Returns: undefined
       }
       generate_slug: {
