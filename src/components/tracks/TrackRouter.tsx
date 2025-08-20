@@ -146,24 +146,44 @@ const TrackRouter: React.FC<TrackRouterProps> = ({ userId, trackSlug, userScore 
   }
 
   if (trackSlug === 'equilibrio') {
+    const EquilibrioDayView = React.lazy(() => import('./equilibrio/EquilibrioDayView'));
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Trilha Equilíbrio - Dia {currentDay}</h2>
-          <p className="text-gray-600">Visualização do dia em desenvolvimento...</p>
+      <React.Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 animate-spin mx-auto mb-4 border-4 border-yellow-500 border-t-transparent rounded-full"></div>
+            <p>Carregando Trilha Equilíbrio...</p>
+          </div>
         </div>
-      </div>
+      }>
+        <EquilibrioDayView
+          userId={userId}
+          dayNumber={currentDay}
+          onNavigate={handleDayNavigation}
+          onComplete={handleTrackComplete}
+        />
+      </React.Suspense>
     );
   }
 
   if (trackSlug === 'renovacao') {
+    const RenovacaoDayView = React.lazy(() => import('./renovacao/RenovacaoDayView'));
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4 text-red-600">Trilha Renovação - Dia {currentDay}</h2>
-          <p className="text-gray-600">Jornada intensiva em desenvolvimento...</p>
+      <React.Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 animate-spin mx-auto mb-4 border-4 border-red-500 border-t-transparent rounded-full"></div>
+            <p>Carregando Trilha Renovação...</p>
+          </div>
         </div>
-      </div>
+      }>
+        <RenovacaoDayView
+          userId={userId}
+          dayNumber={currentDay}
+          onNavigate={handleDayNavigation}
+          onComplete={handleTrackComplete}
+        />
+      </React.Suspense>
     );
   }
 
