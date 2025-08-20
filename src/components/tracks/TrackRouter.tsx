@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import LiberdadeOnboarding from './liberdade/LiberdadeOnboarding';
 import LiberdadeDayView from './liberdade/LiberdadeDayView';
+import EquilibrioOnboarding from './equilibrio/EquilibrioOnboarding';
+import RenovacaoOnboarding from './renovacao/RenovacaoOnboarding';
 import { Loader2 } from 'lucide-react';
 
 interface TrackRouterProps {
@@ -106,15 +108,32 @@ const TrackRouter: React.FC<TrackRouterProps> = ({ userId, trackSlug, userScore 
       );
     }
     
-    // TODO: Add other track onboardings
+    if (trackSlug === 'equilibrio') {
+      return (
+        <EquilibrioOnboarding
+          userId={userId}
+          onComplete={handleOnboardingComplete}
+        />
+      );
+    }
+    
+    if (trackSlug === 'renovacao') {
+      return (
+        <RenovacaoOnboarding
+          userId={userId}
+          onComplete={handleOnboardingComplete}
+        />
+      );
+    }
+    
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Onboarding para {trackSlug} em desenvolvimento...</p>
+        <p>Onboarding para {trackSlug} não encontrado.</p>
       </div>
     );
   }
 
-  // Show day content
+  // Show track content after onboarding
   if (trackSlug === 'liberdade') {
     return (
       <LiberdadeDayView
@@ -126,10 +145,31 @@ const TrackRouter: React.FC<TrackRouterProps> = ({ userId, trackSlug, userScore 
     );
   }
 
-  // TODO: Add other track day views
+  if (trackSlug === 'equilibrio') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Trilha Equilíbrio - Dia {currentDay}</h2>
+          <p className="text-gray-600">Visualização do dia em desenvolvimento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (trackSlug === 'renovacao') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4 text-red-600">Trilha Renovação - Dia {currentDay}</h2>
+          <p className="text-gray-600">Jornada intensiva em desenvolvimento...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <p>Trilha {trackSlug} em desenvolvimento...</p>
+      <p>Trilha {trackSlug} não encontrada.</p>
     </div>
   );
 };
