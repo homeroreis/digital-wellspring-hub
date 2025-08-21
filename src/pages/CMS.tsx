@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import Navbar from '@/components/Navbar';
 import ContentManagementSystem from '@/components/ContentManagementSystem';
 
 const CMS = () => {
@@ -11,7 +12,7 @@ const CMS = () => {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-background">
       <Helmet>
         <title>CMS — Sistema de Gestão de Conteúdo</title>
         <meta name="description" content="Crie e gerencie conteúdos para as trilhas de transformação digital adventista" />
@@ -19,8 +20,12 @@ const CMS = () => {
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      <ContentManagementSystem />
-    </>
+      <Navbar />
+
+      <main className="flex-1">
+        <ContentManagementSystem />
+      </main>
+    </div>
   );
 };
 

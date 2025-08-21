@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import InteractiveOnboardingSystem from '@/components/InteractiveOnboardingSystem';
+import Navbar from '@/components/Navbar';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
@@ -67,17 +68,21 @@ const Onboarding = () => {
   }
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-background">
       <Helmet>
         <title>Configuração Inicial - Além das Notificações</title>
         <meta name="description" content="Configure suas preferências e comece sua jornada de transformação digital" />
       </Helmet>
       
-      <InteractiveOnboardingSystem 
-        trackSlug={trackSlug} 
-        userId={user.id} 
-      />
-    </>
+      <Navbar />
+      
+      <main className="flex-1">
+        <InteractiveOnboardingSystem 
+          trackSlug={trackSlug} 
+          userId={user.id} 
+        />
+      </main>
+    </div>
   );
 };
 

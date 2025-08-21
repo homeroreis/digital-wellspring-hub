@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import TrackRouter from '@/components/tracks/TrackRouter';
+import Navbar from '@/components/Navbar';
 import { Loader2 } from 'lucide-react';
 
 const Track = () => {
@@ -81,19 +82,23 @@ const Track = () => {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-background">
       <Helmet>
         <title>{getTrackName(trackSlug)} — Além das Notificações</title>
         <meta name="description" content={getTrackDescription(trackSlug)} />
         <link rel="canonical" href={`${window.location.origin}/track/${trackSlug}`} />
       </Helmet>
 
-      <TrackRouter 
-        userId={user.id}
-        trackSlug={trackSlug}
-        userScore={userScore}
-      />
-    </>
+      <Navbar />
+
+      <main className="flex-1">
+        <TrackRouter 
+          userId={user.id}
+          trackSlug={trackSlug}
+          userScore={userScore}
+        />
+      </main>
+    </div>
   );
 };
 

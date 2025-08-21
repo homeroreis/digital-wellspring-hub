@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Share2, Download, Heart, AlertTriangle, CheckCircle, Target, Users, Sparkles, TrendingUp, Smartphone, Clock, ArrowRight, Star, Gift, MessageCircle, Facebook, Twitter, Instagram, Copy, Mail } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 const PersonalizedResultsPage = () => {
   const [showShareModal, setShowShareModal] = useState(false);
@@ -193,12 +194,15 @@ const PersonalizedResultsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div 
-        className="relative text-white py-16"
-        style={{ backgroundColor: trackInfo.color }}
-      >
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navbar />
+      
+      <main className="flex-1 bg-gray-50">
+        {/* Hero Section */}
+        <div 
+          className="relative text-white py-16"
+          style={{ backgroundColor: trackInfo.color }}
+        >
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="w-24 h-24 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center">
             <trackInfo.icon className="w-12 h-12" />
@@ -510,7 +514,7 @@ const PersonalizedResultsPage = () => {
             </div>
           </div>
         </div>
-      )}
+      </main>
     </div>
   );
 };
