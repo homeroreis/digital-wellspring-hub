@@ -511,9 +511,10 @@ const PersonalizedResultsPage = () => {
               >
                 Fechar
               </button>
-            </div>
-          </div>
-        </div>
+             </div>
+           </div>
+         </div>
+       )}
       </main>
     </div>
   );
