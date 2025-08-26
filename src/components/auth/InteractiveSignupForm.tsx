@@ -1,5 +1,10 @@
 import React, { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, CheckCircle, Eye, EyeOff, Heart, MapPin, Briefcase, Sparkles, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle, Eye, EyeOff, Heart, MapPin, Briefcase, Sparkles, User, Calendar } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,7 +32,7 @@ const InteractiveSignupForm: React.FC = () => {
     phone: "",
 
     // Passo 2
-    age: "",
+    birthDate: undefined as Date | undefined,
     gender: "",
     maritalStatus: "",
 
@@ -52,7 +57,7 @@ const InteractiveSignupForm: React.FC = () => {
   const getStepFields = (step: number) => {
     switch (step) {
       case 1: return ["name", "email", "phone"];
-      case 2: return ["age", "gender"];
+      case 2: return ["birthDate", "gender"];
       case 3: return ["city", "state"];
       case 4: return ["profession", "educationLevel"];
       case 5: return ["howFoundUs", "acceptTerms", "password"];
@@ -73,8 +78,15 @@ const InteractiveSignupForm: React.FC = () => {
       case "phone":
         if (!value) next.phone = "Telefone é obrigatório"; else if (value.replace(/\D/g, "").length < 10) next.phone = "Informe um telefone válido"; else delete next.phone;
         break;
-      case "age":
-        if (!value) next.age = "Idade é obrigatória"; else if (+value < 13 || +value > 100) next.age = "Idade deve ser entre 13 e 100"; else delete next.age;
+      case "birthDate":
+        if (!value) next.birthDate = "Data de nascimento é obrigatória"; 
+        else {
+          const today = new Date();
+          const birthDate = new Date(value);
+          const age = today.getFullYear() - birthDate.getFullYear();
+          if (age < 13 || age > 100) next.birthDate = "Idade deve ser entre 13 e 100 anos";
+          else delete next.birthDate;
+        }
         break;
       case "gender":
         if (!value) next.gender = "Selecione o gênero"; else delete next.gender;
@@ -109,6 +121,7 @@ const InteractiveSignupForm: React.FC = () => {
     const fields = getStepFields(step);
     return fields.every((f) => {
       if (f === "acceptTerms") return !!formData[f as keyof typeof formData];
+      if (f === "birthDate") return !!formData.birthDate && !errors[f];
       return !!formData[f as keyof typeof formData] && !errors[f];
     });
   };
@@ -142,7 +155,7 @@ const InteractiveSignupForm: React.FC = () => {
           data: {
             full_name: formData.name,
             phone: formData.phone,
-            age: formData.age,
+            birth_date: formData.birthDate ? format(formData.birthDate, 'yyyy-MM-dd') : null,
             gender: formData.gender,
             marital_status: formData.maritalStatus,
             city: formData.city,
@@ -221,9 +234,34 @@ const InteractiveSignupForm: React.FC = () => {
           <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2">
             <StepHeader icon={<Heart className="w-8 h-8" />} title="Perfil pessoal" subtitle="Isso nos ajuda a personalizar sua experiência" />
             <div>
-              <label className="block text-sm mb-1">Idade</label>
-              <input type="number" className={`w-full px-4 py-3 rounded-lg border bg-background`} placeholder="Quantos anos você tem?" value={formData.age} onChange={(e) => handleChange("age", e.target.value)} />
-              {errors.age && <p className="text-xs text-destructive mt-1">{errors.age}</p>}
+              <label className="block text-sm mb-1">Data de nascimento</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full px-4 py-3 justify-start text-left font-normal",
+                      !formData.birthDate && "text-muted-foreground"
+                    )}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {formData.birthDate ? format(formData.birthDate, "dd/MM/yyyy") : "Selecione sua data de nascimento"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={formData.birthDate}
+                    onSelect={(date) => handleChange("birthDate", date)}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              {errors.birthDate && <p className="text-xs text-destructive mt-1">{errors.birthDate}</p>}
             </div>
             <div>
               <label className="block text-sm mb-1">Gênero</label>
@@ -231,8 +269,6 @@ const InteractiveSignupForm: React.FC = () => {
                 <option value="">Selecione uma opção</option>
                 <option value="masculino">Masculino</option>
                 <option value="feminino">Feminino</option>
-                <option value="outro">Outro</option>
-                <option value="prefiro_nao_informar">Prefiro não informar</option>
               </select>
               {errors.gender && <p className="text-xs text-destructive mt-1">{errors.gender}</p>}
             </div>

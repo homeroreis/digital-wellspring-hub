@@ -342,7 +342,7 @@ export type Database = {
       profiles: {
         Row: {
           accept_terms: boolean
-          age: number | null
+          birth_date: string | null
           city: string | null
           created_at: string
           education_level: string | null
@@ -360,7 +360,7 @@ export type Database = {
         }
         Insert: {
           accept_terms?: boolean
-          age?: number | null
+          birth_date?: string | null
           city?: string | null
           created_at?: string
           education_level?: string | null
@@ -378,7 +378,7 @@ export type Database = {
         }
         Update: {
           accept_terms?: boolean
-          age?: number | null
+          birth_date?: string | null
           city?: string | null
           created_at?: string
           education_level?: string | null
@@ -774,6 +774,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_age_from_birth_date: {
+        Args: { birth_date: string }
+        Returns: number
+      }
       calculate_user_level: {
         Args: { total_points: number }
         Returns: number
