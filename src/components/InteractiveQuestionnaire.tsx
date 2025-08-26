@@ -205,11 +205,10 @@ const InteractiveQuestionnaire = () => {
   ];
 
   const scaleLabels = [
-    { value: 0, label: 'Nunca', color: '#10B981' },
-    { value: 1, label: 'Raramente', color: '#84CC16' },
-    { value: 2, label: 'Ocasionalmente', color: '#EAB308' },
-    { value: 3, label: 'Frequentemente', color: '#F97316' },
-    { value: 4, label: 'Quase sempre', color: '#EF4444' },
+    { value: 1, label: 'Raramente', color: '#10B981' },
+    { value: 2, label: 'Às vezes', color: '#84CC16' },
+    { value: 3, label: 'Frequentemente', color: '#EAB308' },
+    { value: 4, label: 'Quase sempre', color: '#F97316' },
     { value: 5, label: 'Sempre', color: '#DC2626' }
   ];
 
@@ -264,8 +263,8 @@ const InteractiveQuestionnaire = () => {
       }
     });
 
-    const trackType = totalScore <= 33 ? 'liberdade' : 
-                     totalScore <= 66 ? 'equilibrio' : 'renovacao';
+    const trackType = totalScore <= 50 ? 'liberdade' : 
+                     totalScore <= 75 ? 'equilibrio' : 'renovacao';
 
     const totalTimeSpent = Math.round((Date.now() - timeStarted) / 1000);
 
@@ -412,7 +411,7 @@ const InteractiveQuestionnaire = () => {
                           {option.label}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {option.value}/5
+                          Nível {option.value}
                         </div>
                       </div>
                       
