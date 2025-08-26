@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { Share2, Download, Heart, AlertTriangle, CheckCircle, Target, Users, Sparkles, TrendingUp, Smartphone, Clock, ArrowRight, Star, Gift, MessageCircle, Facebook, Twitter, Instagram, Copy, Mail } from 'lucide-react';
+import { Share2, Download, Heart, AlertTriangle, CheckCircle, Target, Users, Sparkles, TrendingUp, Smartphone, Clock, ArrowRight, Star, Gift, MessageCircle, Facebook, Twitter, Instagram, Copy, Mail, RefreshCw, Calendar } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import PersonalizedFeedback from '@/components/PersonalizedFeedback';
+import ProgressComparison from '@/components/ProgressComparison';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { useProgressTracking } from '@/hooks/useProgressTracking';
 
 const PersonalizedResultsPage = () => {
   const [searchParams] = useSearchParams();
@@ -14,6 +16,8 @@ const PersonalizedResultsPage = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [resultsSaved, setResultsSaved] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
+  const { progressData, saveResult, updateProgressData } = useProgressTracking();
 
   // Obter dados dos parâmetros da URL
   const totalScore = parseInt(searchParams.get('score') || '0');
@@ -202,10 +206,22 @@ const PersonalizedResultsPage = () => {
     }
   };
 
-  // Salvar resultados no banco de dados
+  // Salvar resultados no banco de dados e localStorage
   useEffect(() => {
     const saveResults = async () => {
       if (resultsSaved) return;
+      
+      const currentResult = {
+        id: Date.now().toString(),
+        totalScore,
+        categoryScores,
+        trackType,
+        completedAt: new Date().toISOString(),
+        totalTimeSpent
+      };
+      
+      // Salvar no localStorage para comparações futuras
+      saveResult(currentResult);
       
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -239,7 +255,15 @@ const PersonalizedResultsPage = () => {
     if (totalScore > 0) {
       saveResults();
     }
-  }, [totalScore, categoryScores, totalTimeSpent, trackType, resultsSaved]);
+  }, [totalScore, categoryScores, totalTimeSpent, trackType, resultsSaved, saveResult]);
+
+  const handleRetakeTest = () => {
+    if (progressData.canRetake) {
+      navigate('/test');
+    } else {
+      alert(`Você pode refazer o teste em ${progressData.daysUntilRetake} dias, após completar sua trilha atual.`);
+    }
+  };
 
   const startTrack = () => {
     // Redirecionar para início da trilha com onboarding específico
@@ -364,6 +388,52 @@ const PersonalizedResultsPage = () => {
             <div className="text-sm text-gray-500">Para crescimento espiritual</div>
           </div>
         </div>
+
+        {/* Progress and Comparison Section */}
+        {progressData.previousResults.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Seu Progresso</h2>
+              <div className="flex gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowComparison(!showComparison)}
+                  className="flex items-center"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {showComparison ? 'Ocultar' : 'Ver'} Evolução
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleRetakeTest}
+                  disabled={!progressData.canRetake}
+                  className="flex items-center"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  {progressData.canRetake ? 'Refazer Teste' : `Refazer em ${progressData.daysUntilRetake} dias`}
+                </Button>
+              </div>
+            </div>
+            
+            {/* Retake Info */}
+            {!progressData.canRetake && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex items-start">
+                  <Clock className="w-5 h-5 text-blue-600 mr-3 mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-blue-800 mb-1">Aguarde para refazer o teste</h4>
+                    <p className="text-sm text-blue-700">
+                      Complete sua trilha atual ({progressData.trackDuration} dias) para refazer o teste e comparar sua evolução.
+                      Restam apenas {progressData.daysUntilRetake} dias!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {showComparison && <ProgressComparison />}
+          </div>
+        )}
 
         {/* Feedback Personalizado por Categoria */}
         <div className="mb-8">
