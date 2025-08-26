@@ -297,8 +297,18 @@ const InteractiveQuestionnaire = () => {
         });
       }
       
-      // Redirecionar diretamente para a trilha recomendada
-      navigate(`/track/${results.trackType}`);
+      // Redirecionar para página de resultados personalizada com dados completos
+      const searchParams = new URLSearchParams({
+        score: results.totalScore.toString(),
+        track: results.trackType,
+        comportamento: results.categoryScores.comportamento.toString(),
+        vida_cotidiana: results.categoryScores.vida_cotidiana.toString(),
+        relacoes: results.categoryScores.relacoes.toString(),
+        espiritual: results.categoryScores.espiritual.toString(),
+        time: results.totalTimeSpent.toString()
+      });
+      
+      navigate(`/personalized-results?${searchParams.toString()}`);
       
     } catch (error) {
       console.error('Erro ao salvar resultados:', error);

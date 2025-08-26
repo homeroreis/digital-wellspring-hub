@@ -1,24 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Share2, Download, Heart, AlertTriangle, CheckCircle, Target, Users, Sparkles, TrendingUp, Smartphone, Clock, ArrowRight, Star, Gift, MessageCircle, Facebook, Twitter, Instagram, Copy, Mail } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
+import PersonalizedFeedback from '@/components/PersonalizedFeedback';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 const PersonalizedResultsPage = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [showShareModal, setShowShareModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // Dados de exemplo - em produção viriam da URL ou contexto
+  // Obter dados dos parâmetros da URL
+  const totalScore = parseInt(searchParams.get('score') || '0');
+  const trackType = searchParams.get('track') || 'liberdade';
+  const categoryScores = {
+    comportamento: parseInt(searchParams.get('comportamento') || '0'),
+    vida_cotidiana: parseInt(searchParams.get('vida_cotidiana') || '0'),
+    relacoes: parseInt(searchParams.get('relacoes') || '0'),
+    espiritual: parseInt(searchParams.get('espiritual') || '0')
+  };
+  const totalTimeSpent = parseInt(searchParams.get('time') || '0');
+
+  // Dados do usuário - em produção viriam do banco ou contexto
   const userData = {
-    name: "Maria Silva",
-    email: "maria@email.com",
-    totalScore: 58,
-    categoryScores: {
-      comportamento: 16,
-      vida_cotidiana: 14,
-      relacoes: 15,
-      espiritual: 13
-    },
-    trackType: "equilibrio",
+    name: "Usuário",
+    email: "user@email.com",
+    totalScore,
+    categoryScores,
+    trackType,
     completedAt: new Date().toISOString()
   };
 
@@ -189,8 +201,8 @@ const PersonalizedResultsPage = () => {
   };
 
   const startTrack = () => {
-    // Redirecionar para início da trilha
-    window.location.href = `/onboarding?track=${userData.trackType}`;
+    // Redirecionar para início da trilha com onboarding específico
+    navigate(`/track/${userData.trackType}?from=results`);
   };
 
   return (
@@ -310,6 +322,15 @@ const PersonalizedResultsPage = () => {
             <p className="text-gray-600 mb-4">Prioridade {trackInfo.urgency.toLowerCase()}</p>
             <div className="text-sm text-gray-500">Para crescimento espiritual</div>
           </div>
+        </div>
+
+        {/* Feedback Personalizado por Categoria */}
+        <div className="mb-8">
+          <PersonalizedFeedback 
+            categoryScores={userData.categoryScores}
+            totalScore={userData.totalScore}
+            trackType={userData.trackType}
+          />
         </div>
 
         {/* Analysis Grid */}
