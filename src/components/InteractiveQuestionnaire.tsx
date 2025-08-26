@@ -205,11 +205,11 @@ const InteractiveQuestionnaire = () => {
   ];
 
   const scaleLabels = [
-    { value: 1, label: 'Raramente', color: '#10B981' },
-    { value: 2, label: 'Às vezes', color: '#84CC16' },
-    { value: 3, label: 'Frequentemente', color: '#EAB308' },
-    { value: 4, label: 'Quase sempre', color: '#F97316' },
-    { value: 5, label: 'Sempre', color: '#DC2626' }
+    { value: 1, label: 'Raramente', descriptor: '1x por semana ou menos', color: '#10B981' },
+    { value: 2, label: 'Às vezes', descriptor: '2-3x por semana', color: '#84CC16' },
+    { value: 3, label: 'Frequentemente', descriptor: '4-5x por semana', color: '#EAB308' },
+    { value: 4, label: 'Quase sempre', descriptor: '6x por semana', color: '#F97316' },
+    { value: 5, label: 'Sempre', descriptor: 'Todos os dias', color: '#DC2626' }
   ];
 
   const progress = ((currentQuestion + 1) / questions.length) * 100;
@@ -429,15 +429,18 @@ const InteractiveQuestionnaire = () => {
                         : 'border-border hover:border-primary/50 hover:shadow-md'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-lg font-semibold mb-1">
-                          {option.label}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Nível {option.value}
-                        </div>
-                      </div>
+                     <div className="flex items-center justify-between">
+                       <div className="text-left">
+                         <div className="text-lg font-semibold mb-1">
+                           {option.label}
+                         </div>
+                         <div className="text-sm text-muted-foreground mb-1">
+                           {option.descriptor}
+                         </div>
+                         <div className="text-xs text-muted-foreground/70">
+                           Nível {option.value}
+                         </div>
+                       </div>
                       
                       <div 
                         className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl"
