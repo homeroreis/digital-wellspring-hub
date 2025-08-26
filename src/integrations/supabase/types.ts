@@ -438,6 +438,54 @@ export type Database = {
         }
         Relationships: []
       }
+      quick_test_results: {
+        Row: {
+          accept_contact: boolean
+          age: number | null
+          answers: Json
+          city: string | null
+          completed_at: string
+          created_at: string
+          full_name: string
+          id: string
+          missionary_id: string | null
+          recommended_track: string
+          total_score: number
+          user_id: string | null
+          whatsapp: string
+        }
+        Insert: {
+          accept_contact?: boolean
+          age?: number | null
+          answers: Json
+          city?: string | null
+          completed_at?: string
+          created_at?: string
+          full_name: string
+          id?: string
+          missionary_id?: string | null
+          recommended_track: string
+          total_score: number
+          user_id?: string | null
+          whatsapp: string
+        }
+        Update: {
+          accept_contact?: boolean
+          age?: number | null
+          answers?: Json
+          city?: string | null
+          completed_at?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          missionary_id?: string | null
+          recommended_track?: string
+          total_score?: number
+          user_id?: string | null
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       track_daily_activities: {
         Row: {
           activity_description: string

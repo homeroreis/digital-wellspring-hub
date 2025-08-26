@@ -8,6 +8,7 @@ import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Test from "./pages/Test";
+import QuickTest from "./pages/QuickTest";
 import Programs from "./pages/Programs";
 import ProgramDetail from "./pages/ProgramDetail";
 import FAQ from "./pages/FAQ";
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/test" element={<Test />} />
+            <Route path="/quick-test" element={<QuickTest />} />
             <Route path="/programs" element={<Programs />} />
             <Route path="/programs/:slug" element={<ProgramDetail />} />
             <Route path="/onboarding" element={<Onboarding />} />

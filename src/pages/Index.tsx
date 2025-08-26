@@ -68,6 +68,40 @@ const Index = () => {
           </div>
         </section>
 
+        <section className="py-12 bg-gradient-to-r from-secondary/5 to-accent/5 border-y border-secondary/20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary-foreground px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <span className="h-2 w-2 bg-secondary rounded-full animate-pulse"></span>
+                Para Missionários
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Teste Rápido para Trabalho Missionário</h3>
+              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                Versão simplificada de 4 perguntas para triagem rápida nas ruas. 
+                Ideal para missionários que precisam de uma avaliação express.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => navigate('/quick-test')}
+                  className="border-secondary hover:bg-secondary/10"
+                >
+                  Teste Rápido (2 min)
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+                <div className="text-sm text-muted-foreground">
+                  <span>✅ 4 perguntas estratégicas</span>
+                  <span className="mx-2">•</span>
+                  <span>📱 Otimizado para mobile</span>
+                  <span className="mx-2">•</span>
+                  <span>⚡ Resultado instantâneo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="py-16 bg-subtle">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-center mb-8">A realidade da nomofobia</h2>

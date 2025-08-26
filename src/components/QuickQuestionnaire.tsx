@@ -1,0 +1,490 @@
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { Smartphone, Users, Heart, Church, ArrowRight, ArrowLeft } from "lucide-react";
+
+interface Answer {
+  questionIndex: number;
+  value: number;
+  timeSpent: number;
+  timestamp: Date;
+}
+
+interface PersonalData {
+  fullName: string;
+  whatsapp: string;
+  age: string;
+  city: string;
+  acceptContact: boolean;
+}
+
+const QuickQuestionnaire = () => {
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState<'intro' | 'questions' | 'data' | 'result'>('intro');
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<Answer[]>([]);
+  const [personalData, setPersonalData] = useState<PersonalData>({
+    fullName: "",
+    whatsapp: "",
+    age: "",
+    city: "",
+    acceptContact: false
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [results, setResults] = useState<any>(null);
+  const [questionStartTime, setQuestionStartTime] = useState(Date.now());
+
+  // 4 perguntas estratégicas - uma de cada categoria
+  const questions = [
+    {
+      id: 0,
+      category: "Comportamento com o Smartphone",
+      question: "Verifico meu smartphone imediatamente ao acordar",
+      icon: Smartphone,
+      color: "from-blue-500 to-blue-600"
+    },
+    {
+      id: 1,
+      category: "Impacto na Vida Cotidiana", 
+      question: "Passo mais tempo do que pretendia nas redes sociais",
+      icon: Users,
+      color: "from-green-500 to-green-600"
+    },
+    {
+      id: 2,
+      category: "Impacto nas Relações Pessoais",
+      question: "Uso meu smartphone durante momentos de conexão com pessoas próximas",
+      icon: Heart,
+      color: "from-orange-500 to-orange-600"
+    },
+    {
+      id: 3,
+      category: "Impacto Espiritual",
+      question: "O uso do smartphone interfere no meu tempo de oração ou estudo bíblico",
+      icon: Church,
+      color: "from-purple-500 to-purple-600"
+    }
+  ];
+
+  const frequencyOptions = [
+    { value: 1, label: "Nunca", description: "Não se aplica" },
+    { value: 2, label: "Raramente", description: "Algumas vezes por mês" },
+    { value: 3, label: "Às vezes", description: "Algumas vezes por semana" },
+    { value: 4, label: "Frequentemente", description: "Diariamente" },
+    { value: 5, label: "Sempre", description: "Múltiplas vezes por dia" }
+  ];
+
+  const handleAnswerSelect = (value: number) => {
+    const timeSpent = Date.now() - questionStartTime;
+    const newAnswer: Answer = {
+      questionIndex: currentQuestion,
+      value,
+      timeSpent,
+      timestamp: new Date()
+    };
+
+    const updatedAnswers = [...answers];
+    const existingIndex = updatedAnswers.findIndex(a => a.questionIndex === currentQuestion);
+    
+    if (existingIndex >= 0) {
+      updatedAnswers[existingIndex] = newAnswer;
+    } else {
+      updatedAnswers.push(newAnswer);
+    }
+    
+    setAnswers(updatedAnswers);
+
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(currentQuestion + 1);
+        setQuestionStartTime(Date.now());
+      }, 500);
+    } else {
+      setTimeout(() => {
+        setCurrentStep('data');
+      }, 500);
+    }
+  };
+
+  const calculateResults = () => {
+    const totalScore = answers.reduce((sum, answer) => sum + answer.value, 0);
+    const maxScore = questions.length * 5;
+    const percentage = (totalScore / maxScore) * 100;
+
+    let trackType = "equilibrio";
+    let trackName = "Equilíbrio Digital";
+    let description = "Você tem um bom equilíbrio no uso da tecnologia, mas pode aprimorar alguns aspectos.";
+    let recommendation = "Foque em criar limites saudáveis e momentos de desconexão consciente.";
+
+    if (percentage <= 40) {
+      trackType = "liberdade";
+      trackName = "Liberdade Digital";
+      description = "Você demonstra um uso consciente da tecnologia. Parabéns!";
+      recommendation = "Continue mantendo seus bons hábitos e ajude outros a encontrar o mesmo equilíbrio.";
+    } else if (percentage >= 70) {
+      trackType = "renovacao";
+      trackName = "Renovação Digital";
+      description = "Seu uso da tecnologia pode estar impactando sua vida significativamente.";
+      recommendation = "É hora de uma transformação profunda. Vamos juntos nessa jornada de renovação!";
+    }
+
+    return {
+      totalScore,
+      percentage: Math.round(percentage),
+      trackType,
+      trackName,
+      description,
+      recommendation
+    };
+  };
+
+  const handleSubmit = async () => {
+    if (!personalData.fullName || !personalData.whatsapp) {
+      toast.error("Por favor, preencha pelo menos o nome e WhatsApp");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const results = calculateResults();
+      setResults(results);
+
+      const { error } = await supabase
+        .from('quick_test_results')
+        .insert({
+          full_name: personalData.fullName,
+          whatsapp: personalData.whatsapp,
+          age: personalData.age ? parseInt(personalData.age) : null,
+          city: personalData.city || null,
+          accept_contact: personalData.acceptContact,
+          answers: JSON.parse(JSON.stringify(answers)),
+          total_score: results.totalScore,
+          recommended_track: results.trackType
+        });
+
+      if (error) throw error;
+
+      setCurrentStep('result');
+      toast.success("Teste concluído com sucesso!");
+    } catch (error) {
+      console.error("Erro ao salvar resultado:", error);
+      toast.error("Erro ao salvar o resultado. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const IntroStep = () => (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="text-center mb-8">
+        <div className="bg-gradient-to-r from-primary to-primary-glow rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+          <Smartphone className="w-10 h-10 text-white" />
+        </div>
+        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+          Teste Rápido de Dependência Digital
+        </h1>
+        <p className="text-xl text-muted-foreground mb-8">
+          Uma avaliação rápida para missionários em apenas 4 perguntas
+        </p>
+      </div>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="text-center">Como funciona?</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="text-center">
+              <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-4 mb-3">
+                <span className="text-2xl font-bold text-blue-600">4</span>
+              </div>
+              <h3 className="font-semibold mb-2">Perguntas Estratégicas</h3>
+              <p className="text-sm text-muted-foreground">
+                Uma pergunta de cada categoria essencial para avaliar seu relacionamento com a tecnologia
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-green-50 dark:bg-green-950 rounded-lg p-4 mb-3">
+                <span className="text-2xl font-bold text-green-600">2min</span>
+              </div>
+              <h3 className="font-semibold mb-2">Tempo Estimado</h3>
+              <p className="text-sm text-muted-foreground">
+                Rapidez ideal para o trabalho missionário nas ruas
+              </p>
+            </div>
+          </div>
+          <div className="text-center mt-6">
+            <div className="bg-purple-50 dark:bg-purple-950 rounded-lg p-4 mb-3">
+              <ArrowRight className="w-8 h-8 text-purple-600 mx-auto" />
+            </div>
+            <h3 className="font-semibold mb-2">Resultado Imediato</h3>
+            <p className="text-sm text-muted-foreground">
+              Classificação instantânea com recomendação de trilha personalizada
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="text-center">
+        <Button 
+          onClick={() => {
+            setCurrentStep('questions');
+            setQuestionStartTime(Date.now());
+          }}
+          size="lg"
+          className="px-8 py-3"
+        >
+          Iniciar Teste Rápido
+          <ArrowRight className="ml-2 w-5 h-5" />
+        </Button>
+      </div>
+    </div>
+  );
+
+  const QuestionsStep = () => {
+    const question = questions[currentQuestion];
+    const IconComponent = question.icon;
+    const progress = ((currentQuestion + 1) / questions.length) * 100;
+
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm font-medium text-muted-foreground">
+              Pergunta {currentQuestion + 1} de {questions.length}
+            </span>
+            <span className="text-sm font-medium text-primary">
+              {Math.round(progress)}% concluído
+            </span>
+          </div>
+          <div className="w-full bg-muted rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-primary to-primary-glow h-2 rounded-full transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        <Card className="mb-8">
+          <CardHeader className="text-center">
+            <div className={`bg-gradient-to-r ${question.color} rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center`}>
+              <IconComponent className="w-8 h-8 text-white" />
+            </div>
+            <div className="text-sm font-medium text-muted-foreground mb-2">
+              {question.category}
+            </div>
+            <CardTitle className="text-xl">
+              {question.question}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {frequencyOptions.map((option) => (
+                <Button
+                  key={option.value}
+                  variant="outline"
+                  className="w-full text-left justify-start hover:border-primary hover:bg-primary/5 transition-all"
+                  onClick={() => handleAnswerSelect(option.value)}
+                >
+                  <div className="flex flex-col items-start">
+                    <div className="font-medium">{option.label}</div>
+                    <div className="text-sm text-muted-foreground">{option.description}</div>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {currentQuestion > 0 && (
+          <div className="text-center">
+            <Button
+              variant="ghost"
+              onClick={() => setCurrentQuestion(currentQuestion - 1)}
+            >
+              <ArrowLeft className="mr-2 w-4 h-4" />
+              Pergunta Anterior
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const DataStep = () => (
+    <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <Card>
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl mb-2">Seus Dados</CardTitle>
+          <p className="text-muted-foreground">
+            Para gerar seu resultado e permitir o acompanhamento
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="fullName">Nome Completo *</Label>
+            <Input
+              id="fullName"
+              value={personalData.fullName}
+              onChange={(e) => setPersonalData(prev => ({ ...prev, fullName: e.target.value }))}
+              placeholder="Digite seu nome completo"
+              className="w-full"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="whatsapp">WhatsApp *</Label>
+            <Input
+              id="whatsapp"
+              value={personalData.whatsapp}
+              onChange={(e) => setPersonalData(prev => ({ ...prev, whatsapp: e.target.value }))}
+              placeholder="(11) 99999-9999"
+              className="w-full"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="age">Idade</Label>
+              <Input
+                id="age"
+                type="number"
+                value={personalData.age}
+                onChange={(e) => setPersonalData(prev => ({ ...prev, age: e.target.value }))}
+                placeholder="Sua idade"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="city">Cidade</Label>
+              <Input
+                id="city"
+                value={personalData.city}
+                onChange={(e) => setPersonalData(prev => ({ ...prev, city: e.target.value }))}
+                placeholder="Sua cidade"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="acceptContact"
+              checked={personalData.acceptContact}
+              onCheckedChange={(checked) => 
+                setPersonalData(prev => ({ ...prev, acceptContact: checked as boolean }))
+              }
+            />
+            <Label htmlFor="acceptContact" className="text-sm">
+              Aceito receber contato posterior sobre o programa completo
+            </Label>
+          </div>
+
+          <div className="flex gap-4 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentStep('questions')}
+              disabled={isSubmitting}
+            >
+              <ArrowLeft className="mr-2 w-4 h-4" />
+              Voltar
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="flex-1"
+            >
+              {isSubmitting ? "Processando..." : "Ver Resultado"}
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const ResultStep = () => {
+    if (!results) return null;
+
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <div className="text-center mb-8">
+          <div className="bg-gradient-to-r from-primary to-primary-glow rounded-full p-6 w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+            <span className="text-2xl font-bold text-white">{results.percentage}%</span>
+          </div>
+          <h1 className="text-3xl font-bold mb-4">Seu Resultado</h1>
+          <p className="text-xl text-muted-foreground">
+            Trilha recomendada: <span className="font-semibold text-primary">{results.trackName}</span>
+          </p>
+        </div>
+
+        <Card className="mb-8">
+          <CardContent className="p-8">
+            <div className="text-center space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Sua pontuação</h3>
+                <div className="flex justify-center items-center gap-4 text-sm text-muted-foreground">
+                  <span>Baixa dependência</span>
+                  <div className="flex-1 bg-muted rounded-full h-2 max-w-xs">
+                    <div 
+                      className="bg-gradient-to-r from-primary to-primary-glow h-2 rounded-full"
+                      style={{ width: `${results.percentage}%` }}
+                    />
+                  </div>
+                  <span>Alta dependência</span>
+                </div>
+              </div>
+
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-3">Interpretação</h3>
+                <p className="text-muted-foreground mb-4">{results.description}</p>
+                <p className="text-primary font-medium">{results.recommendation}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="text-center space-y-4">
+          <Button
+            onClick={() => navigate("/test")}
+            size="lg"
+            className="mr-4"
+          >
+            Fazer Teste Completo
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/programs")}
+            size="lg"
+          >
+            Ver Programa {results.trackName}
+          </Button>
+        </div>
+
+        <div className="mt-8 p-4 bg-muted/50 rounded-lg text-center text-sm text-muted-foreground">
+          <p>Este é um teste simplificado para triagem inicial.</p>
+          <p>Para uma avaliação completa e personalizada, faça o teste completo de 20 perguntas.</p>
+        </div>
+      </div>
+    );
+  };
+
+  const stepComponents = {
+    intro: IntroStep,
+    questions: QuestionsStep,
+    data: DataStep,
+    result: ResultStep
+  };
+
+  const StepComponent = stepComponents[currentStep];
+
+  return <StepComponent />;
+};
+
+export default QuickQuestionnaire;
