@@ -16,10 +16,10 @@ import Auth from "./pages/Auth";
 import CMS from "./pages/CMS";
 import Dashboard from "./pages/Dashboard";
 import Gamification from "./pages/Gamification";
-import Admin from "./pages/Admin";
 import Onboarding from "./pages/Onboarding";
 import Track from "./pages/Track";
 import PersonalizedResults from "./pages/PersonalizedResults";
+import AdminRoutes from "./pages/admin/AdminRoutes";
 
 const queryClient = new QueryClient();
 
@@ -42,7 +42,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/cms" element={<CMS />} />
             <Route path="/gamification" element={<Gamification />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/*" element={<AdminRoutes />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
