@@ -136,12 +136,12 @@ const TrackRouter: React.FC<TrackRouterProps> = ({ userId, trackSlug, userScore 
   // Show track content after onboarding
   if (trackSlug === 'liberdade') {
     return (
-      <LiberdadeDayView
-        userId={userId}
-        dayNumber={currentDay}
-        onNavigate={handleDayNavigation}
-        onComplete={handleTrackComplete}
-      />
+          <LiberdadeDayView
+            userId={userId}
+            currentDay={currentDay}
+            onDayChange={handleDayNavigation}
+            onTrackComplete={handleTrackComplete}
+          />
     );
   }
 

@@ -1,126 +1,114 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Heart, 
-  Target, 
-  Book, 
-  CheckCircle, 
-  Calendar,
-  Trophy,
-  Lightbulb,
-  Gift,
-  ChevronLeft,
-  ChevronRight,
-  Star
-} from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ChevronLeft, ChevronRight, Calendar, Target, Book, Zap, Gift, CheckCircle, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { liberdadeContent } from '@/data/tracks/liberdade-content';
+import { toast } from 'sonner';
+import { usePersonalizedContent, usePersonalizedActivities, getProfileBasedRecommendations } from '@/hooks/usePersonalizedContent';
 
 interface LiberdadeDayViewProps {
   userId: string;
-  dayNumber: number;
-  onNavigate: (day: number) => void;
-  onComplete?: () => void;
-}
-
-interface ActivityProgress {
-  [key: string]: boolean;
+  currentDay: number;
+  onDayChange: (day: number) => void;
+  onTrackComplete?: () => void;
 }
 
 const LiberdadeDayView: React.FC<LiberdadeDayViewProps> = ({
   userId,
-  dayNumber,
-  onNavigate,
-  onComplete
+  currentDay,
+  onDayChange,
+  onTrackComplete
 }) => {
-  const [activityProgress, setActivityProgress] = useState<ActivityProgress>({});
-  const [dayCompleted, setDayCompleted] = useState(false);
+  const [completedActivities, setCompletedActivities] = useState<Set<number>>(new Set());
   const [totalPoints, setTotalPoints] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const dayContent = liberdadeContent.find(day => day.day_number === dayNumber);
+  // Hook para conteúdo personalizado
+  const { personalizedContent, loading: contentLoading, error: contentError } = usePersonalizedContent(userId, 'liberdade', currentDay);
+  const { activities, loading: activitiesLoading } = usePersonalizedActivities(userId, 'liberdade', currentDay);
+
+  const progress = ((currentDay - 1) / 7) * 100;
 
   useEffect(() => {
     loadProgress();
-  }, [dayNumber]);
+  }, [userId, currentDay]);
 
   const loadProgress = async () => {
     try {
       const { data: progress } = await supabase
         .from('user_activity_progress')
-        .select('*')
+        .select('activity_index, points_earned')
         .eq('user_id', userId)
         .eq('track_slug', 'liberdade')
-        .eq('day_number', dayNumber);
+        .eq('day_number', currentDay);
 
       if (progress) {
-        const progressMap: ActivityProgress = {};
-        progress.forEach(p => {
-          progressMap[`${p.activity_type}_${p.activity_index}`] = true;
-        });
-        setActivityProgress(progressMap);
-        
-        const dayPoints = progress.reduce((sum, p) => sum + p.points_earned, 0);
-        setTotalPoints(dayPoints);
-        setDayCompleted(dayPoints >= (dayContent?.max_points || 100));
+        const completed = new Set(progress.map(p => p.activity_index));
+        const points = progress.reduce((sum, p) => sum + p.points_earned, 0);
+        setCompletedActivities(completed);
+        setTotalPoints(points);
       }
     } catch (error) {
       console.error('Error loading progress:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleActivityToggle = async (activityKey: string, activity: any) => {
-    const isCompleted = !activityProgress[activityKey];
-    
+  const handleActivityToggle = async (activityIndex: number, points: number, checked: boolean) => {
     try {
-      if (isCompleted) {
-        // Mark as completed
+      if (checked) {
+        // Marcar como concluída
         await supabase
           .from('user_activity_progress')
           .insert({
             user_id: userId,
             track_slug: 'liberdade',
-            day_number: dayNumber,
-            activity_index: activity.title.length % 10, // Simple index
-            activity_title: activity.title,
-            activity_type: activity.required ? 'required' : 'bonus',
-            points_earned: activity.points
+            day_number: currentDay,
+            activity_index: activityIndex,
+            activity_title: activities[activityIndex]?.activity_title || '',
+            activity_type: 'daily',
+            points_earned: points
           });
+
+        setCompletedActivities(prev => new Set(prev).add(activityIndex));
+        setTotalPoints(prev => prev + points);
+        
+        toast.success(`+${points} pontos!`);
       } else {
-        // Mark as not completed
+        // Desmarcar
         await supabase
           .from('user_activity_progress')
           .delete()
           .eq('user_id', userId)
           .eq('track_slug', 'liberdade')
-          .eq('day_number', dayNumber)
-          .eq('activity_title', activity.title);
+          .eq('day_number', currentDay)
+          .eq('activity_index', activityIndex);
+
+        setCompletedActivities(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(activityIndex);
+          return newSet;
+        });
+        setTotalPoints(prev => prev - points);
       }
 
-      setActivityProgress(prev => ({
-        ...prev,
-        [activityKey]: isCompleted
-      }));
-
-      // Recalculate points
-      const newPoints = isCompleted ? totalPoints + activity.points : totalPoints - activity.points;
-      setTotalPoints(newPoints);
-      
-      if (newPoints >= (dayContent?.max_points || 100) && !dayCompleted) {
-        setDayCompleted(true);
-        // Update track progress
-        await updateTrackProgress();
+      // Verificar se o dia foi completado
+      const newTotal = checked ? totalPoints + points : totalPoints - points;
+      if (newTotal >= (personalizedContent?.max_points || 100)) {
+        await updateTrackProgress(newTotal);
       }
     } catch (error) {
-      console.error('Error updating activity:', error);
+      console.error('Error toggling activity:', error);
+      toast.error('Erro ao atualizar atividade');
     }
   };
 
-  const updateTrackProgress = async () => {
+  const updateTrackProgress = async (dayPoints: number) => {
     try {
       const { data: trackProgress } = await supabase
         .from('user_track_progress')
@@ -130,269 +118,267 @@ const LiberdadeDayView: React.FC<LiberdadeDayViewProps> = ({
         .single();
 
       if (trackProgress) {
-        const newCurrentDay = Math.max(trackProgress.current_day, dayNumber + 1);
-        const newTotalPoints = trackProgress.total_points + (dayContent?.max_points || 100);
+        const newCurrentDay = Math.max(trackProgress.current_day, currentDay + 1);
         
         await supabase
           .from('user_track_progress')
           .update({
             current_day: newCurrentDay,
-            total_points: newTotalPoints,
+            total_points: trackProgress.total_points + dayPoints,
             last_activity_at: new Date().toISOString(),
-            streak_days: dayNumber // Simple streak calculation
+            streak_days: trackProgress.streak_days + 1
           })
           .eq('id', trackProgress.id);
 
-        // Check for achievements
+        // Verificar conquistas
         await supabase.rpc('check_and_award_achievements', {
           p_user_id: userId,
           p_track_slug: 'liberdade'
         });
+
+        toast.success('Dia completado! 🎉');
+        
+        if (currentDay === 7) {
+          toast.success('Parabéns! Você completou a Trilha Liberdade! 🏆');
+          onTrackComplete?.();
+        }
       }
     } catch (error) {
       console.error('Error updating track progress:', error);
     }
   };
 
-  if (!dayContent) {
-    return <div>Dia não encontrado</div>;
-  }
-
-  const completedActivities = Object.values(activityProgress).filter(Boolean).length;
-  const progressPercentage = (totalPoints / dayContent.max_points) * 100;
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
-      {/* Header */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-4xl mx-auto p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onNavigate(dayNumber - 1)}
-                disabled={dayNumber === 1}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              
-              <div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-emerald-600" />
-                  <span className="font-semibold text-emerald-600">Dia {dayNumber}</span>
-                  {dayCompleted && <CheckCircle className="w-5 h-5 text-green-600" />}
-                </div>
-                <h1 className="text-2xl font-bold">{dayContent.title}</h1>
-                <p className="text-muted-foreground">{dayContent.objective}</p>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <div className="flex items-center gap-2 mb-2">
-                <Trophy className="w-4 h-4 text-amber-500" />
-                <span className="font-semibold">{totalPoints}/{dayContent.max_points} pontos</span>
-              </div>
-              <Progress value={progressPercentage} className="w-32" />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Badge variant={dayContent.difficulty_level === 1 ? "secondary" : 
-                          dayContent.difficulty_level === 2 ? "default" : "destructive"}>
-              {Array.from({ length: dayContent.difficulty_level }, (_, i) => (
-                <Star key={i} className="w-3 h-3 fill-current" />
-              ))}
-            </Badge>
-            <span className="text-sm text-muted-foreground">
-              {completedActivities} de {dayContent.activities.length} atividades concluídas
-            </span>
-          </div>
+  if (loading || contentLoading || activitiesLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Carregando seu conteúdo personalizado...</p>
         </div>
       </div>
+    );
+  }
 
-      <div className="max-w-4xl mx-auto p-4">
-        <Tabs defaultValue="devocional" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="devocional" className="flex items-center gap-2">
-              <Book className="w-4 h-4" />
-              Devocional
-            </TabsTrigger>
-            <TabsTrigger value="atividade" className="flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              Atividade
-            </TabsTrigger>
-            <TabsTrigger value="desafio" className="flex items-center gap-2">
-              <Lightbulb className="w-4 h-4" />
-              Desafio
-            </TabsTrigger>
-            <TabsTrigger value="bonus" className="flex items-center gap-2">
-              <Gift className="w-4 h-4" />
-              Bônus
-            </TabsTrigger>
-          </TabsList>
+  if (contentError || !personalizedContent) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Erro ao carregar conteúdo</h2>
+          <p className="text-muted-foreground mb-4">{contentError || 'Não conseguimos encontrar o conteúdo para este dia.'}</p>
+          <Button onClick={() => onDayChange(1)}>Voltar ao Dia 1</Button>
+        </div>
+      </div>
+    );
+  }
 
-          {/* Devocional */}
-          <TabsContent value="devocional">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Book className="w-5 h-5 text-blue-600" />
-                  Devocional Matinal (5-10 min)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-blue-900 mb-2">Versículo:</h3>
-                  <p className="text-blue-800 italic">"{dayContent.devotional_verse}"</p>
-                </div>
+  // Obter recomendações baseadas no perfil
+  const recommendations = (personalizedContent as any)._personalization ? 
+    getProfileBasedRecommendations(
+      (personalizedContent as any)._personalization.mostAffectedArea,
+      (personalizedContent as any)._personalization.userScore
+    ) : null;
 
-                <div>
-                  <h3 className="font-semibold mb-3">Reflexão:</h3>
-                  <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                    {dayContent.devotional_reflection}
-                  </p>
-                </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+      <div className="max-w-4xl mx-auto p-6">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-6">
+          <Calendar className="w-5 h-5 text-primary" />
+          <h1 className="text-3xl font-bold">{personalizedContent.title}</h1>
+          <Badge variant="outline" className="track-border-liberdade">
+            Dia {currentDay}/7
+          </Badge>
+          {(personalizedContent as any)._personalization?.appliedRules?.length > 0 && (
+            <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Personalizado
+            </Badge>
+          )}
+        </div>
 
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-purple-900 mb-2">Oração:</h3>
-                  <p className="text-purple-800 italic">"{dayContent.devotional_prayer}"</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Target className="w-4 h-4 text-primary" />
+            <span className="font-semibold">Objetivo do Dia:</span>
+          </div>
+          <p className="text-muted-foreground">{personalizedContent.objective}</p>
+        </div>
 
-          {/* Atividade Principal */}
-          <TabsContent value="atividade">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-green-600" />
-                  {dayContent.main_activity_title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose max-w-none">
-                  <div className="whitespace-pre-line text-muted-foreground">
-                    {dayContent.main_activity_content}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* Seção de personalização */}
+        {recommendations && (
+          <Card className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2 text-purple-800">
+                <Sparkles className="w-5 h-5" />
+                Recomendações Personalizadas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-purple-700 font-medium mb-3">{recommendations.focus}</p>
+              <ul className="space-y-2">
+                {recommendations.tips.map((tip, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm text-purple-600">
+                    <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    {tip}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
-          {/* Desafio */}
-          <TabsContent value="desafio">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5 text-orange-600" />
-                  {dayContent.main_challenge_title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose max-w-none">
-                  <div className="whitespace-pre-line text-muted-foreground">
-                    {dayContent.main_challenge_content}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* Progress Bar */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Progresso da Trilha</span>
+            <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+        </div>
 
-          {/* Bônus */}
-          <TabsContent value="bonus">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Gift className="w-5 h-5 text-purple-600" />
-                  {dayContent.bonus_activity_title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose max-w-none">
-                  <div className="whitespace-pre-line text-muted-foreground">
-                    {dayContent.bonus_activity_content}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* Activity Checklist */}
-        <Card className="mt-6">
+        {/* Devocional */}
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-emerald-600" />
-              Lista de Atividades
+              <Book className="w-5 h-5" />
+              Devocional
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {dayContent.activities.map((activity, index) => {
-                const activityKey = `activity_${index}`;
-                const isCompleted = activityProgress[activityKey] || false;
-                
-                return (
-                  <div
-                    key={index}
-                    className={`flex items-start gap-3 p-3 rounded-lg transition-all ${
-                      isCompleted ? 'bg-green-50 border-green-200' : 'bg-muted/20'
-                    } border`}
-                  >
-                    <Checkbox
-                      checked={isCompleted}
-                      onCheckedChange={() => handleActivityToggle(activityKey, activity)}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className={`font-medium ${isCompleted ? 'text-green-800' : ''}`}>
-                          {activity.title}
-                        </h4>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={activity.required ? "default" : "secondary"}>
-                            {activity.points} pts
-                          </Badge>
-                          {activity.required && (
-                            <Badge variant="outline" className="text-xs">
-                              Obrigatório
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {activity.description}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+          <CardContent className="space-y-4">
+            <div>
+              <h4 className="font-semibold mb-2">Versículo do Dia</h4>
+              <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground">
+                {personalizedContent.devotional_verse}
+              </blockquote>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Reflexão</h4>
+              <p className="text-muted-foreground leading-relaxed">
+                {personalizedContent.devotional_reflection}
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Oração</h4>
+              <p className="text-muted-foreground leading-relaxed italic">
+                {personalizedContent.devotional_prayer}
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Navigation Footer */}
-        <div className="flex justify-between items-center mt-8 pt-6 border-t">
+        {/* Atividade Principal */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              {personalizedContent.main_activity_title}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="prose prose-sm max-w-none">
+              <div className="whitespace-pre-line text-muted-foreground">
+                {personalizedContent.main_activity_content}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Desafio Principal */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5" />
+              {personalizedContent.main_challenge_title}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="prose prose-sm max-w-none">
+              <div className="whitespace-pre-line text-muted-foreground">
+                {personalizedContent.main_challenge_content}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Atividade Bônus */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Gift className="w-5 h-5" />
+              {personalizedContent.bonus_activity_title}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="prose prose-sm max-w-none">
+              <div className="whitespace-pre-line text-muted-foreground">
+                {personalizedContent.bonus_activity_content}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Checklist de Atividades */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5" />
+              Atividades do Dia
+              <Badge variant="secondary">
+                {totalPoints}/{personalizedContent.max_points} pontos
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {activities.map((activity, index) => (
+                <div key={index} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                  <Checkbox
+                    id={`activity-${index}`}
+                    checked={completedActivities.has(index)}
+                    onCheckedChange={(checked) => handleActivityToggle(index, activity.points_value, checked as boolean)}
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <label 
+                      htmlFor={`activity-${index}`}
+                      className={`font-medium cursor-pointer ${completedActivities.has(index) ? 'line-through text-muted-foreground' : ''}`}
+                    >
+                      {activity.activity_title}
+                    </label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {activity.activity_description}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="outline" className="text-xs">
+                        {activity.points_value} pontos
+                      </Badge>
+                      {activity.is_required && (
+                        <Badge variant="destructive" className="text-xs">
+                          Obrigatório
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between">
           <Button
             variant="outline"
-            onClick={() => onNavigate(dayNumber - 1)}
-            disabled={dayNumber === 1}
+            onClick={() => onDayChange(currentDay - 1)}
+            disabled={currentDay === 1}
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Dia Anterior
           </Button>
-
-          {dayCompleted && (
-            <Badge className="bg-green-600">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Dia Completo!
-            </Badge>
-          )}
-
+          
           <Button
-            onClick={() => onNavigate(dayNumber + 1)}
-            disabled={dayNumber === 7}
+            onClick={() => onDayChange(currentDay + 1)}
+            disabled={currentDay === 7}
           >
             Próximo Dia
             <ChevronRight className="w-4 h-4 ml-2" />

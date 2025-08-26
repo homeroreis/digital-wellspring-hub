@@ -100,6 +100,39 @@ export type Database = {
           },
         ]
       }
+      content_personalization_rules: {
+        Row: {
+          condition_data: Json
+          created_at: string
+          day_number: number
+          id: string
+          personalized_content: Json
+          rule_type: string
+          track_slug: string
+          updated_at: string
+        }
+        Insert: {
+          condition_data: Json
+          created_at?: string
+          day_number: number
+          id?: string
+          personalized_content: Json
+          rule_type: string
+          track_slug: string
+          updated_at?: string
+        }
+        Update: {
+          condition_data?: Json
+          created_at?: string
+          day_number?: number
+          id?: string
+          personalized_content?: Json
+          rule_type?: string
+          track_slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       content_tag_relations: {
         Row: {
           content_id: string
