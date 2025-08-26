@@ -156,9 +156,13 @@ const QuickQuestionnaire = () => {
       const results = calculateResults();
       setResults(results);
 
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+
       const { error } = await supabase
         .from('quick_test_results')
         .insert({
+          user_id: session?.user?.id || null, // Save user_id if logged in
           full_name: personalData.fullName,
           whatsapp: personalData.whatsapp,
           age: personalData.age ? parseInt(personalData.age) : null,
@@ -452,8 +456,16 @@ const QuickQuestionnaire = () => {
 
         <div className="text-center space-y-4">
           <Button
+            onClick={() => navigate("/dashboard")}
+            size="lg"
+            className="mr-4"
+          >
+            Ir para Minha Trilha
+          </Button>
+          <Button
             onClick={() => navigate("/test")}
             size="lg"
+            variant="outline"
             className="mr-4"
           >
             Fazer Teste Completo

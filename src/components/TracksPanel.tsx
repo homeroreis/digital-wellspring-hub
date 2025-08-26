@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Trophy, Flame, Target, CheckCircle, Clock, Lock } from 'lucide-react';
+import { Calendar, Trophy, Flame, Target, CheckCircle, Clock, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,14 +19,20 @@ import {
 interface TracksPanelProps {
   trackSlug: string;
   trackTitle: string;
+  maxDays?: number;
 }
 
-export const TracksPanel = ({ trackSlug, trackTitle }: TracksPanelProps) => {
+export const TracksPanel = ({ trackSlug, trackTitle, maxDays = 21 }: TracksPanelProps) => {
   const [selectedDay, setSelectedDay] = useState(1);
+  const [currentWeek, setCurrentWeek] = useState(1);
   const { toast } = useToast();
 
+  // Calculate number of weeks based on maxDays
+  const totalWeeks = Math.ceil(maxDays / 7);
+  const weekStartDay = (currentWeek - 1) * 7 + 1;
+
   // Data queries
-  const { data: weekDays, isLoading: weekLoading } = useWeekDays(trackSlug, 1);
+  const { data: weekDays, isLoading: weekLoading } = useWeekDays(trackSlug, weekStartDay);
   const { data: dayDetail, isLoading: dayLoading } = useDayDetail(trackSlug, selectedDay);
   const { data: trackProgress } = useTrackProgress(trackSlug);
 
@@ -69,8 +75,14 @@ export const TracksPanel = ({ trackSlug, trackTitle }: TracksPanelProps) => {
           description: `Parabéns! Você completou o dia ${selectedDay}.`,
         });
         // Move to next day if available
-        if (selectedDay < 7) {
-          setSelectedDay(selectedDay + 1);
+        if (selectedDay < maxDays) {
+          const nextDay = selectedDay + 1;
+          setSelectedDay(nextDay);
+          // Change week if necessary
+          const nextWeek = Math.ceil(nextDay / 7);
+          if (nextWeek !== currentWeek) {
+            setCurrentWeek(nextWeek);
+          }
         }
       } else {
         toast({
@@ -166,10 +178,43 @@ export const TracksPanel = ({ trackSlug, trackTitle }: TracksPanelProps) => {
       {/* Week Calendar */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            {trackTitle} - Semana 1
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              {trackTitle} - Semana {currentWeek}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (currentWeek > 1) {
+                    setCurrentWeek(currentWeek - 1);
+                    setSelectedDay((currentWeek - 2) * 7 + 1);
+                  }
+                }}
+                disabled={currentWeek <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {currentWeek} de {totalWeeks}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (currentWeek < totalWeeks) {
+                    setCurrentWeek(currentWeek + 1);
+                    setSelectedDay(currentWeek * 7 + 1);
+                  }
+                }}
+                disabled={currentWeek >= totalWeeks}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-7 gap-2">

@@ -23,7 +23,8 @@ const Dashboard = () => {
 
       // Fetch user's latest questionnaire result to determine recommended track
       try {
-        const { data, error } = await supabase
+        // Try to get full questionnaire result first
+        const { data: fullTest, error: fullTestError } = await supabase
           .from('questionnaire_results')
           .select('track_type, total_score')
           .eq('user_id', session.user.id)
@@ -31,16 +32,33 @@ const Dashboard = () => {
           .limit(1)
           .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching questionnaire results:', error);
+        if (fullTestError && fullTestError.code !== 'PGRST116') {
+          console.error('Error fetching questionnaire results:', fullTestError);
         }
 
-        if (data) {
-          setRecommendedTrack(data.track_type);
+        if (fullTest) {
+          setRecommendedTrack(fullTest.track_type);
         } else {
-          // No questionnaire completed yet, redirect to test
-          navigate('/test', { replace: true });
-          return;
+          // Try to get quick test result
+          const { data: quickTest, error: quickTestError } = await supabase
+            .from('quick_test_results')
+            .select('recommended_track, total_score')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (quickTestError && quickTestError.code !== 'PGRST116') {
+            console.error('Error fetching quick test results:', quickTestError);
+          }
+
+          if (quickTest) {
+            setRecommendedTrack(quickTest.recommended_track);
+          } else {
+            // No test completed yet, redirect to test
+            navigate('/test', { replace: true });
+            return;
+          }
         }
       } catch (error) {
         console.error('Error loading recommended track:', error);
@@ -92,6 +110,7 @@ const Dashboard = () => {
               <TracksPanel 
                 trackSlug={recommendedTrack} 
                 trackTitle={programTracks.find(t => t.slug === recommendedTrack)?.title || recommendedTrack}
+                maxDays={programTracks.find(t => t.slug === recommendedTrack)?.durationDays || 21}
               />
             </div>
           ) : (
