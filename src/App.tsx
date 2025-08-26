@@ -19,6 +19,7 @@ import Gamification from "./pages/Gamification";
 import Admin from "./pages/Admin";
 import Onboarding from "./pages/Onboarding";
 import Track from "./pages/Track";
+import PersonalizedResults from "./pages/PersonalizedResults";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/programs/:slug" element={<ProgramDetail />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/track/:trackSlug" element={<Track />} />
+            <Route path="/personalized-results" element={<PersonalizedResults />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/cms" element={<CMS />} />
             <Route path="/gamification" element={<Gamification />} />

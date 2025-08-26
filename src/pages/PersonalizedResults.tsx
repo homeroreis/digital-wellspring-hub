@@ -6,12 +6,14 @@ import Navbar from '@/components/Navbar';
 import PersonalizedFeedback from '@/components/PersonalizedFeedback';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 
 const PersonalizedResultsPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [showShareModal, setShowShareModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [resultsSaved, setResultsSaved] = useState(false);
 
   // Obter dados dos parâmetros da URL
   const totalScore = parseInt(searchParams.get('score') || '0');
@@ -199,6 +201,45 @@ const PersonalizedResultsPage = () => {
       console.log('Error copying:', error);
     }
   };
+
+  // Salvar resultados no banco de dados
+  useEffect(() => {
+    const saveResults = async () => {
+      if (resultsSaved) return;
+      
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { error } = await supabase
+            .from('questionnaire_results')
+            .insert({
+              user_id: user.id,
+              total_score: totalScore,
+              comportamento_score: categoryScores.comportamento,
+              vida_cotidiana_score: categoryScores.vida_cotidiana,
+              relacoes_score: categoryScores.relacoes,
+              espiritual_score: categoryScores.espiritual,
+              total_time_spent: totalTimeSpent,
+              answers: { track_type: trackType } // Salvar tipo de trilha recomendada
+            });
+
+          if (!error) {
+            setResultsSaved(true);
+            console.log('Resultados salvos com sucesso');
+          } else {
+            console.error('Erro ao salvar resultados:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao conectar com o banco:', error);
+      }
+    };
+
+    if (totalScore > 0) {
+      saveResults();
+    }
+  }, [totalScore, categoryScores, totalTimeSpent, trackType, resultsSaved]);
 
   const startTrack = () => {
     // Redirecionar para início da trilha com onboarding específico
