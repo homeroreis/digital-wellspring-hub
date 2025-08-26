@@ -247,7 +247,7 @@ const InteractiveOnboardingSystem = ({ trackSlug, userId }: OnboardingProps) => 
       if (error) throw error;
 
       toast.success('Onboarding concluído com sucesso!');
-      navigate('/dashboard');
+      navigate(`/track/${trackSlug}`);
       
     } catch (error) {
       console.error('Erro ao salvar preferências:', error);
