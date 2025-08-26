@@ -17,7 +17,7 @@ const PersonalizedResultsPage = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [resultsSaved, setResultsSaved] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
-  const { progressData, saveRetryProgress, updateProgressData } = useProgressTracking();
+  const { progressData, saveTestResult, updateProgressData } = useProgressTracking();
 
   // Obter dados dos parâmetros da URL
   const totalScore = parseInt(searchParams.get('score') || '0');
@@ -220,12 +220,8 @@ const PersonalizedResultsPage = () => {
         totalTimeSpent
       };
       
-      // Salvar no localStorage para comparações futuras
-      await saveRetryProgress({
-        ...currentResult,
-        attemptNumber: 1,
-        attemptDate: new Date().toISOString().split('T')[0]
-      });
+      // Salvar usando hook para comparações futuras
+      await saveTestResult(currentResult);
       
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -259,14 +255,10 @@ const PersonalizedResultsPage = () => {
     if (totalScore > 0) {
       saveResults();
     }
-  }, [totalScore, categoryScores, totalTimeSpent, trackType, resultsSaved, saveRetryProgress]);
+  }, [totalScore, categoryScores, totalTimeSpent, trackType, resultsSaved, saveTestResult]);
 
   const handleRetakeTest = () => {
-    if (progressData.canRetake) {
-      navigate('/test');
-    } else {
-      alert(`Você pode refazer o teste em ${progressData.daysUntilRetake} dias, após completar sua trilha atual.`);
-    }
+    navigate('/test');
   };
 
   const startTrack = () => {
@@ -410,30 +402,13 @@ const PersonalizedResultsPage = () => {
                 <Button
                   variant="outline"
                   onClick={handleRetakeTest}
-                  disabled={!progressData.canRetake}
                   className="flex items-center"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  {progressData.canRetake ? 'Refazer Teste' : `Refazer em ${progressData.daysUntilRetake} dias`}
+                  Refazer Teste
                 </Button>
               </div>
             </div>
-            
-            {/* Retake Info */}
-            {!progressData.canRetake && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <div className="flex items-start">
-                  <Clock className="w-5 h-5 text-blue-600 mr-3 mt-1 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-blue-800 mb-1">Aguarde para refazer o teste</h4>
-                    <p className="text-sm text-blue-700">
-                      Complete sua trilha atual ({progressData.trackDuration} dias) para refazer o teste e comparar sua evolução.
-                      Restam apenas {progressData.daysUntilRetake} dias!
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
             
             {showComparison && <ProgressComparison />}
           </div>

@@ -290,20 +290,6 @@ const InteractiveQuestionnaire = () => {
         return;
       }
 
-      // Get today's attempts to determine attempt number
-      const today = new Date().toISOString().split('T')[0];
-      const { data: todayAttempts } = await supabase
-        .from('questionnaire_results')
-        .select('attempt_number')
-        .eq('user_id', user.id)
-        .eq('attempt_date', today)
-        .order('attempt_number', { ascending: false })
-        .limit(1);
-
-      const attemptNumber = (todayAttempts && todayAttempts.length > 0) 
-        ? todayAttempts[0].attempt_number + 1 
-        : 1;
-
       const { error } = await supabase
         .from('questionnaire_results')
         .insert({
@@ -315,9 +301,7 @@ const InteractiveQuestionnaire = () => {
           espiritual_score: results.categoryScores.espiritual,
           total_time_spent: results.totalTimeSpent,
           answers: results.answersData as any,
-          track_type: results.trackType,
-          attempt_number: attemptNumber,
-          attempt_date: today
+          track_type: results.trackType
         });
 
       if (error) {
@@ -327,7 +311,7 @@ const InteractiveQuestionnaire = () => {
 
       navigate('/personalized-results', { 
         state: { 
-          results: { ...results, attemptNumber, attemptDate: today },
+          results,
           isNewResult: true 
         } 
       });

@@ -363,8 +363,6 @@ export type Database = {
       questionnaire_results: {
         Row: {
           answers: Json
-          attempt_date: string
-          attempt_number: number
           comportamento_score: number
           created_at: string
           espiritual_score: number
@@ -378,8 +376,6 @@ export type Database = {
         }
         Insert: {
           answers: Json
-          attempt_date?: string
-          attempt_number?: number
           comportamento_score?: number
           created_at?: string
           espiritual_score?: number
@@ -393,8 +389,6 @@ export type Database = {
         }
         Update: {
           answers?: Json
-          attempt_date?: string
-          attempt_number?: number
           comportamento_score?: number
           created_at?: string
           espiritual_score?: number
