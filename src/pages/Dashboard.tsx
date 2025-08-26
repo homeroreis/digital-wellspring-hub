@@ -23,38 +23,47 @@ const Dashboard = () => {
 
       // Fetch user's latest questionnaire result to determine recommended track
       try {
+        console.log('Fetching results for user:', session.user.id);
+        
         // Try to get full questionnaire result first
         const { data: fullTest, error: fullTestError } = await supabase
           .from('questionnaire_results')
-          .select('track_type, total_score')
+          .select('track_type, total_score, created_at')
           .eq('user_id', session.user.id)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
+
+        console.log('Full test result:', fullTest, 'Error:', fullTestError);
 
         if (fullTestError && fullTestError.code !== 'PGRST116') {
           console.error('Error fetching questionnaire results:', fullTestError);
         }
 
         if (fullTest) {
+          console.log('Setting recommended track from full test:', fullTest.track_type);
           setRecommendedTrack(fullTest.track_type);
         } else {
           // Try to get quick test result
           const { data: quickTest, error: quickTestError } = await supabase
             .from('quick_test_results')
-            .select('recommended_track, total_score')
+            .select('recommended_track, total_score, created_at')
             .eq('user_id', session.user.id)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
+
+          console.log('Quick test result:', quickTest, 'Error:', quickTestError);
 
           if (quickTestError && quickTestError.code !== 'PGRST116') {
             console.error('Error fetching quick test results:', quickTestError);
           }
 
           if (quickTest) {
+            console.log('Setting recommended track from quick test:', quickTest.recommended_track);
             setRecommendedTrack(quickTest.recommended_track);
           } else {
+            console.log('No test results found, redirecting to test');
             // No test completed yet, redirect to test
             navigate('/test', { replace: true });
             return;

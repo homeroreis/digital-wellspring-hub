@@ -322,96 +322,100 @@ const QuickQuestionnaire = () => {
     );
   };
 
-  const DataStep = () => (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl mb-2">Seus Dados</CardTitle>
-          <p className="text-muted-foreground">
-            Para gerar seu resultado e permitir o acompanhamento
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="fullName">Nome Completo *</Label>
-            <Input
-              id="fullName"
-              value={personalData.fullName}
-              onChange={(e) => setPersonalData(prev => ({ ...prev, fullName: e.target.value }))}
-              placeholder="Digite seu nome completo"
-              className="w-full"
-            />
-          </div>
+  const DataStep = () => {
+    const handleInputChange = (field: keyof PersonalData, value: string | boolean) => {
+      setPersonalData(prev => ({ ...prev, [field]: value }));
+    };
 
-          <div className="space-y-2">
-            <Label htmlFor="whatsapp">WhatsApp *</Label>
-            <Input
-              id="whatsapp"
-              value={personalData.whatsapp}
-              onChange={(e) => setPersonalData(prev => ({ ...prev, whatsapp: e.target.value }))}
-              placeholder="(11) 99999-9999"
-              className="w-full"
-            />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl mb-2">Seus Dados</CardTitle>
+            <p className="text-muted-foreground">
+              Para gerar seu resultado e permitir o acompanhamento
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="age">Idade</Label>
+              <Label htmlFor="fullName">Nome Completo *</Label>
               <Input
-                id="age"
-                type="number"
-                value={personalData.age}
-                onChange={(e) => setPersonalData(prev => ({ ...prev, age: e.target.value }))}
-                placeholder="Sua idade"
+                id="fullName"
+                defaultValue={personalData.fullName}
+                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                placeholder="Digite seu nome completo"
+                className="w-full"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="city">Cidade</Label>
+              <Label htmlFor="whatsapp">WhatsApp *</Label>
               <Input
-                id="city"
-                value={personalData.city}
-                onChange={(e) => setPersonalData(prev => ({ ...prev, city: e.target.value }))}
-                placeholder="Sua cidade"
+                id="whatsapp"
+                defaultValue={personalData.whatsapp}
+                onChange={(e) => handleInputChange('whatsapp', e.target.value)}
+                placeholder="(11) 99999-9999"
+                className="w-full"
               />
             </div>
-          </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="acceptContact"
-              checked={personalData.acceptContact}
-              onCheckedChange={(checked) => 
-                setPersonalData(prev => ({ ...prev, acceptContact: checked as boolean }))
-              }
-            />
-            <Label htmlFor="acceptContact" className="text-sm">
-              Aceito receber contato posterior sobre o programa completo
-            </Label>
-          </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="age">Idade</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  defaultValue={personalData.age}
+                  onChange={(e) => handleInputChange('age', e.target.value)}
+                  placeholder="Sua idade"
+                />
+              </div>
 
-          <div className="flex gap-4 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentStep('questions')}
-              disabled={isSubmitting}
-            >
-              <ArrowLeft className="mr-2 w-4 h-4" />
-              Voltar
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="flex-1"
-            >
-              {isSubmitting ? "Processando..." : "Ver Resultado"}
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+              <div className="space-y-2">
+                <Label htmlFor="city">Cidade</Label>
+                <Input
+                  id="city"
+                  defaultValue={personalData.city}
+                  onChange={(e) => handleInputChange('city', e.target.value)}
+                  placeholder="Sua cidade"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="acceptContact"
+                checked={personalData.acceptContact}
+                onCheckedChange={(checked) => handleInputChange('acceptContact', checked as boolean)}
+              />
+              <Label htmlFor="acceptContact" className="text-sm">
+                Aceito receber contato posterior sobre o programa completo
+              </Label>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentStep('questions')}
+                disabled={isSubmitting}
+              >
+                <ArrowLeft className="mr-2 w-4 h-4" />
+                Voltar
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="flex-1"
+              >
+                {isSubmitting ? "Processando..." : "Ver Resultado"}
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
   const ResultStep = () => {
     if (!results) return null;

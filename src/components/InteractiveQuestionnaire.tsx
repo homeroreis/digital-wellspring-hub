@@ -309,12 +309,8 @@ const InteractiveQuestionnaire = () => {
         return;
       }
 
-      navigate('/personalized-results', { 
-        state: { 
-          results,
-          isNewResult: true 
-        } 
-      });
+      // Navigate to onboarding with recommended track
+      navigate(`/onboarding?track=${results.trackType}`);
     } catch (error) {
       console.error('Error submitting questionnaire:', error);
     } finally {
