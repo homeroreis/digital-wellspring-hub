@@ -45,83 +45,54 @@ const EquilibrioDayView: React.FC<EquilibrioDayViewProps> = ({
   const [totalPoints, setTotalPoints] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Simulated day content (will be replaced with actual data structure later)
-  const dayContent = {
-    day: dayNumber,
-    title: `Dia ${dayNumber} - Construindo Equilíbrio`,
-    subtitle: `Desenvolvendo consciência digital e bem-estar`,
-    phase: 'EQUILIBRIO',
-    difficulty: Math.min(dayNumber <= 7 ? 2 : dayNumber <= 14 ? 3 : 4, 5),
-    maxPoints: 120,
-    devotional: {
-      verse: `Tudo tem o seu tempo determinado, e há tempo para todo propósito debaixo do céu. - Eclesiastes 3:1`,
-      reflection: `Hoje vamos trabalhar o equilíbrio. A tecnologia deve nos servir, não nos dominar. Este é um dia de reconstrução dos seus limites digitais.`,
-      prayer: `Senhor, me ajude a encontrar equilíbrio em todas as áreas da minha vida. Que eu saiba quando conectar e quando desconectar. Amém.`
-    },
-    mainActivity: {
-      title: `Técnica Anti-Ansiedade Digital - Dia ${dayNumber}`,
-      duration: 25,
-      content: `**Respiração 4-7-8 Modificada:**
-
-1. **Preparação (2 min):**
-   - Encontre um local silencioso
-   - Sente-se confortavelmente
-   - Coloque o celular no modo avião
-
-2. **Execução (15 min):**
-   - Inspire por 4 segundos pelo nariz
-   - Segure a respiração por 7 segundos
-   - Expire por 8 segundos pela boca
-   - Repita 20 ciclos completos
-
-3. **Integração (8 min):**
-   - Anote como se sente agora vs. antes
-   - Liste 3 coisas pelas quais é grato
-   - Defina uma intenção para o dia
-
-**Meta:** Use esta técnica sempre que sentir impulso compulsivo de pegar o celular.`
-    },
-    challenge: {
-      title: `Desafio de Conexão Real - Dia ${dayNumber}`,
-      description: `**Hoje você vai:**
-
-• Ter uma conversa de 10 minutos sem celular à vista
-• Fazer uma refeição completa sem telas
-• Dar um abraço genuíno em alguém que ama
-• Escrever à mão uma nota de gratidão
-• Observar a natureza por 5 minutos ininterruptos
-
-**Regra:** Cada atividade deve ser feita com 100% de presença, sem pressa.
-
-**Reflexão:** Como foi diferente estar totalmente presente?`
-    },
-    bonus: {
-      title: `Kit de Emergência Anti-Ansiedade`,
-      content: `**Para momentos de ansiedade digital:**
-
-1. **Técnica 5-4-3-2-1:**
-   - 5 coisas que pode ver
-   - 4 que pode tocar
-   - 3 que pode ouvir
-   - 2 que pode cheirar
-   - 1 que pode saborear
-
-2. **Movimento corporal:**
-   - 10 respirações profundas
-   - Alongue pescoço e ombros
-   - Faça 20 polichinelos
-   - Beba um copo de água
-
-3. **Afirmações:**
-   - "Eu controlo minha atenção"
-   - "Este impulso vai passar"
-   - "Sou mais forte que meus hábitos"`
-    }
-  };
+  const [dayContent, setDayContent] = useState<any>(null);
 
   useEffect(() => {
+    loadDayContent();
     loadProgress();
   }, [dayNumber]);
+
+  const loadDayContent = async () => {
+    try {
+      const { data: content } = await supabase
+        .from('track_daily_content')
+        .select('*')
+        .eq('track_slug', 'equilibrio')
+        .eq('day_number', dayNumber)
+        .single();
+
+      if (content) {
+        setDayContent({
+          day: dayNumber,
+          title: content.title,
+          subtitle: content.objective,
+          phase: 'EQUILIBRIO',
+          difficulty: content.difficulty_level,
+          maxPoints: content.max_points,
+          devotional: {
+            verse: content.devotional_verse,
+            reflection: content.devotional_reflection,
+            prayer: content.devotional_prayer
+          },
+          mainActivity: {
+            title: content.main_activity_title,
+            duration: 25, // Default duration
+            content: content.main_activity_content
+          },
+          challenge: {
+            title: content.main_challenge_title,
+            description: content.main_challenge_content
+          },
+          bonus: {
+            title: content.bonus_activity_title,
+            content: content.bonus_activity_content
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error loading day content:', error);
+    }
+  };
 
   const loadProgress = async () => {
     try {
