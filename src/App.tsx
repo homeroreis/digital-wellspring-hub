@@ -25,6 +25,8 @@ import Profile from "./pages/Profile";
 import ProfileCompletion from "./pages/ProfileCompletion";
 import AdminRoutes from "./pages/admin/AdminRoutes";
 
+import ValidationPage from "./pages/ValidationPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -50,6 +52,7 @@ const App = () => (
             <Route path="/cms" element={<CMS />} />
             <Route path="/gamification" element={<Gamification />} />
             <Route path="/admin/*" element={<AdminRoutes />} />
+            <Route path="/validation" element={<ValidationPage />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
