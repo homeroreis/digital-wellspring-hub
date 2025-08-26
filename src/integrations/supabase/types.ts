@@ -716,9 +716,31 @@ export type Database = {
         Args: { p_track_slug: string; p_user_id: string }
         Returns: undefined
       }
+      complete_activity: {
+        Args: {
+          p_activity_index: number
+          p_activity_title: string
+          p_activity_type?: string
+          p_day_number: number
+          p_track_slug: string
+        }
+        Returns: Json
+      }
+      complete_day: {
+        Args: { p_day_number: number; p_track_slug: string }
+        Returns: Json
+      }
       generate_slug: {
         Args: { title: string }
         Returns: string
+      }
+      get_track_day: {
+        Args: { p_day_number: number; p_track_slug: string }
+        Returns: Json
+      }
+      get_week_days: {
+        Args: { p_start_day?: number; p_track_slug: string }
+        Returns: Json
       }
       update_content_metrics: {
         Args: { p_content_id: string; p_metric_type: string }
