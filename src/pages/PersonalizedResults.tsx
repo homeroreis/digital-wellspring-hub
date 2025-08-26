@@ -198,6 +198,21 @@ const PersonalizedResultsPage = () => {
       <Navbar />
       
       <main className="flex-1 bg-gray-50">
+        {/* Medical Disclaimer */}
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            <div className="flex items-start">
+              <AlertTriangle className="w-5 h-5 text-yellow-600 mr-3 mt-1 flex-shrink-0" />
+              <div>
+                <p className="text-sm text-yellow-700">
+                  <strong>⚠️ IMPORTANTE:</strong> Este resultado não substitui avaliação psicológica ou médica. 
+                  É uma ferramenta de autoavaliação e conscientização sobre hábitos digitais.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Hero Section */}
         <div 
           className="relative text-white py-16"

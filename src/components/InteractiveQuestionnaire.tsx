@@ -330,6 +330,20 @@ const InteractiveQuestionnaire = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
+        {/* Medical Disclaimer */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
+          <div className="flex items-start">
+            <AlertTriangle className="w-6 h-6 text-yellow-600 mr-3 mt-1 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-yellow-800 mb-2">⚠️ IMPORTANTE</h3>
+              <p className="text-sm text-yellow-700">
+                Este teste não substitui avaliação psicológica ou médica. É uma ferramenta de autoavaliação 
+                e conscientização sobre hábitos digitais. Para questões de saúde mental, consulte um profissional qualificado.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Header with Progress */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">

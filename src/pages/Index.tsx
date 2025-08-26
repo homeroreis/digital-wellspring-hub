@@ -70,7 +70,11 @@ const Index = () => {
 
         <section className="py-16 bg-subtle">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">A realidade da nomofobia</h2>
+            <h2 className="text-3xl font-bold text-center mb-8">A realidade da nomofobia</h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
+              Nomofobia é o medo irracional de ficar sem acesso ao celular. Dados científicos revelam o impacto 
+              dessa condição moderna na população global.
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {statistics.map((s, i) => (
                 <div key={i} className="text-center p-6 rounded-xl border bg-card hover:shadow-soft transition-smooth">
@@ -134,12 +138,22 @@ const Index = () => {
       </main>
 
       <footer className="bg-accent text-accent-foreground py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <img src="/lovable-uploads/620a6f7e-7753-420e-b5f9-e8043ee4012b.png" alt="Marca Além das Notificações fundo amarelo" className="h-8 w-8 rounded" loading="lazy" />
-            <span className="font-semibold">Além das Notificações</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <img src="/lovable-uploads/620a6f7e-7753-420e-b5f9-e8043ee4012b.png" alt="Marca Além das Notificações fundo amarelo" className="h-8 w-8 rounded" loading="lazy" />
+              <span className="font-semibold">Além das Notificações</span>
+            </div>
+            <p className="text-sm opacity-85">© 2025 Bem-estar digital. Todos os direitos reservados.</p>
           </div>
-          <p className="text-sm opacity-85">© 2025 Bem-estar digital. Todos os direitos reservados.</p>
+          
+          {/* Medical Disclaimer */}
+          <div className="border-t border-accent-foreground/20 pt-4">
+            <p className="text-xs text-center opacity-75">
+              ⚠️ Os testes e conteúdos desta plataforma não substituem avaliação psicológica ou médica profissional. 
+              São ferramentas de autoavaliação e conscientização sobre hábitos digitais.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
