@@ -259,12 +259,8 @@ export const TracksPanel = ({ trackSlug, trackTitle, maxDays = 21 }: TracksPanel
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-xl">
-                  {dayDetail.day_content?.title}
-                </CardTitle>
-                <p className="text-muted-foreground mt-1">
-                  {dayDetail.day_content?.objective}
-                </p>
+                <CardTitle className="text-xl" dangerouslySetInnerHTML={{ __html: dayDetail.day_content?.title }} />
+                <p className="text-muted-foreground mt-1" dangerouslySetInnerHTML={{ __html: dayDetail.day_content?.objective }} />
               </div>
               <Badge variant="outline">
                 Dia {dayDetail.day_content?.day_number}
@@ -276,18 +272,12 @@ export const TracksPanel = ({ trackSlug, trackTitle, maxDays = 21 }: TracksPanel
             {dayDetail.day_content?.devotional_verse && (
               <div className="bg-muted/50 p-4 rounded-lg space-y-3">
                 <h3 className="font-semibold text-primary">Devocional</h3>
-                <blockquote className="italic border-l-4 border-primary pl-4">
-                  "{dayDetail.day_content.devotional_verse}"
-                </blockquote>
-                <p className="text-sm text-muted-foreground">
-                  {dayDetail.day_content.devotional_reflection}
-                </p>
+                <blockquote className="italic border-l-4 border-primary pl-4" dangerouslySetInnerHTML={{ __html: dayDetail.day_content.devotional_verse }} />
+                <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: dayDetail.day_content.devotional_reflection }} />
                 {dayDetail.day_content.devotional_prayer && (
                   <div className="mt-3">
                     <p className="font-medium text-sm">Oração:</p>
-                    <p className="text-sm italic">
-                      {dayDetail.day_content.devotional_prayer}
-                    </p>
+                    <p className="text-sm italic" dangerouslySetInnerHTML={{ __html: dayDetail.day_content.devotional_prayer }} />
                   </div>
                 )}
               </div>
@@ -296,12 +286,8 @@ export const TracksPanel = ({ trackSlug, trackTitle, maxDays = 21 }: TracksPanel
             {/* Main Activity */}
             {dayDetail.day_content?.main_activity_title && (
               <div className="space-y-3">
-                <h3 className="font-semibold text-primary">
-                  {dayDetail.day_content.main_activity_title}
-                </h3>
-                <p className="text-sm">
-                  {dayDetail.day_content.main_activity_content}
-                </p>
+                <h3 className="font-semibold text-primary" dangerouslySetInnerHTML={{ __html: dayDetail.day_content.main_activity_title }} />
+                <p className="text-sm" dangerouslySetInnerHTML={{ __html: dayDetail.day_content.main_activity_content }} />
               </div>
             )}
 
@@ -327,9 +313,7 @@ export const TracksPanel = ({ trackSlug, trackTitle, maxDays = 21 }: TracksPanel
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center gap-2">
-                            <h4 className="font-medium">
-                              {activity.activity_title}
-                            </h4>
+                            <h4 className="font-medium" dangerouslySetInnerHTML={{ __html: activity.activity_title }} />
                             {activity.is_required && (
                               <Badge variant="secondary" className="text-xs">
                                 Obrigatório
@@ -341,9 +325,7 @@ export const TracksPanel = ({ trackSlug, trackTitle, maxDays = 21 }: TracksPanel
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {activity.activity_description}
-                          </p>
+                          <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: activity.activity_description }} />
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Trophy className="h-3 w-3" />
                             {activity.points_value} pontos
