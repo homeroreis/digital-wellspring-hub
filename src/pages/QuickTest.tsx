@@ -6,10 +6,10 @@ const QuickTest = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Helmet>
-        <title>Teste Rápido - Avaliação Missionária | Além das Notificações</title>
+        <title>Teste Rápido | Além das Notificações</title>
         <meta
           name="description"
-          content="Teste rápido de 4 perguntas para avaliação de dependência digital em trabalho missionário. Resultados imediatos com recomendação personalizada."
+          content="Teste rápido de 4 perguntas para avaliação de dependência digital. Resultados imediatos com recomendação personalizada."
         />
         <link rel="canonical" href={window.location.origin + "/quick-test"} />
       </Helmet>

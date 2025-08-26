@@ -188,10 +188,10 @@ const QuickQuestionnaire = () => {
           <Smartphone className="w-10 h-10 text-white" />
         </div>
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-          Teste Rápido de Dependência Digital
+          Teste Rápido
         </h1>
         <p className="text-xl text-muted-foreground mb-8">
-          Uma avaliação rápida para missionários em apenas 4 perguntas
+          Uma avaliação rápida em apenas 4 perguntas
         </p>
       </div>
 
@@ -216,7 +216,7 @@ const QuickQuestionnaire = () => {
               </div>
               <h3 className="font-semibold mb-2">Tempo Estimado</h3>
               <p className="text-sm text-muted-foreground">
-                Rapidez ideal para o trabalho missionário nas ruas
+                Rapidez e praticidade em qualquer lugar
               </p>
             </div>
           </div>

@@ -73,12 +73,12 @@ const Index = () => {
             <div className="text-center">
               <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary-foreground px-4 py-2 rounded-full text-sm font-medium mb-4">
                 <span className="h-2 w-2 bg-secondary rounded-full animate-pulse"></span>
-                Para Missionários
+                Avaliação Rápida
               </div>
-              <h3 className="text-2xl font-bold mb-4">Teste Rápido para Trabalho Missionário</h3>
+              <h3 className="text-2xl font-bold mb-4">Teste Rápido</h3>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Versão simplificada de 4 perguntas para triagem rápida nas ruas. 
-                Ideal para missionários que precisam de uma avaliação express.
+                Versão simplificada de 4 perguntas para triagem rápida. 
+                Ideal para uma avaliação express de dependência digital.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
                 <Button 
@@ -109,7 +109,7 @@ const Index = () => {
               Nomofobia é o medo irracional de ficar sem acesso ao celular. Dados científicos revelam o impacto 
               dessa condição moderna na população global.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-center max-w-4xl mx-auto">
               {statistics.map((s, i) => (
                 <div key={i} className="text-center p-6 rounded-xl border bg-card hover:shadow-soft transition-smooth">
                   <div className="text-4xl font-bold text-primary mb-2">{s.number}</div>
