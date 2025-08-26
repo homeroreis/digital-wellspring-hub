@@ -14,6 +14,16 @@ const navItems = [
   { to: "/contact", label: "Contato" },
 ];
 
+const authNavItems = [
+  { to: "/", label: "Início" },
+  { to: "/test", label: "Teste" },
+  { to: "/programs", label: "Programas" },
+  { to: "/dashboard", label: "Painel" },
+  { to: "/profile", label: "Perfil" },
+  { to: "/gamification", label: "Gamificação" },
+  { to: "/faq", label: "FAQ" },
+];
+
 const Navbar = () => {
   const [hasSession, setHasSession] = useState(false);
 
@@ -39,7 +49,7 @@ const Navbar = () => {
         </div>
 
         <nav aria-label="Navegação principal" className="hidden md:flex items-center gap-6">
-          {navItems.map((item) => (
+          {(hasSession ? authNavItems : navItems).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
