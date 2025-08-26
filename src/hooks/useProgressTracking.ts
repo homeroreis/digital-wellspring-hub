@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface TestResult {
   id: string;
@@ -12,6 +13,8 @@ export interface TestResult {
   trackType: string;
   completedAt: string;
   totalTimeSpent: number;
+  attemptNumber: number;
+  attemptDate: string;
 }
 
 export interface ProgressData {
@@ -20,6 +23,8 @@ export interface ProgressData {
   canRetake: boolean;
   daysUntilRetake: number;
   trackDuration: number;
+  remainingAttempts: number;
+  todayAttempts: TestResult[];
 }
 
 export const useProgressTracking = () => {
@@ -28,7 +33,9 @@ export const useProgressTracking = () => {
     previousResults: [],
     canRetake: true,
     daysUntilRetake: 0,
-    trackDuration: 0
+    trackDuration: 0,
+    remainingAttempts: 3,
+    todayAttempts: []
   });
 
   const getTrackDuration = (trackType: string): number => {
@@ -40,26 +47,115 @@ export const useProgressTracking = () => {
     return durations[trackType as keyof typeof durations] || 21;
   };
 
-  const saveResult = (result: TestResult) => {
-    const existingResults = getStoredResults();
-    const newResults = [result, ...existingResults].slice(0, 10); // Keep only last 10 results
-    
-    localStorage.setItem('questionnaire_results', JSON.stringify(newResults));
-    updateProgressData();
+  const saveRetryProgress = async (result: TestResult) => {
+    try {
+      const { error } = await supabase
+        .from('questionnaire_results')
+        .insert({
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+          total_score: result.totalScore,
+          comportamento_score: result.categoryScores.comportamento,
+          vida_cotidiana_score: result.categoryScores.vida_cotidiana,
+          relacoes_score: result.categoryScores.relacoes,
+          espiritual_score: result.categoryScores.espiritual,
+          total_time_spent: result.totalTimeSpent,
+          answers: {},
+          track_type: result.trackType,
+          attempt_number: result.attemptNumber,
+          attempt_date: result.attemptDate
+        });
+
+      if (error) throw error;
+      await updateProgressData();
+    } catch (error) {
+      console.error('Error saving retry result:', error);
+    }
   };
 
-  const getStoredResults = (): TestResult[] => {
+  const getStoredResults = async (): Promise<TestResult[]> => {
     try {
-      const stored = localStorage.getItem('questionnaire_results');
-      return stored ? JSON.parse(stored) : [];
-    } catch {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('questionnaire_results')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      return (data || []).map(result => ({
+        id: result.id,
+        totalScore: result.total_score,
+        categoryScores: {
+          comportamento: result.comportamento_score,
+          vida_cotidiana: result.vida_cotidiana_score,
+          relacoes: result.relacoes_score,
+          espiritual: result.espiritual_score
+        },
+        trackType: result.track_type,
+        completedAt: result.created_at,
+        totalTimeSpent: result.total_time_spent,
+        attemptNumber: result.attempt_number,
+        attemptDate: result.attempt_date
+      }));
+    } catch (error) {
+      console.error('Error fetching results:', error);
       return [];
     }
   };
 
-  const canRetakeTest = (lastResult: TestResult): { canRetake: boolean; daysLeft: number } => {
-    if (!lastResult) return { canRetake: true, daysLeft: 0 };
+  const getTodayAttempts = async (): Promise<TestResult[]> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const today = new Date().toISOString().split('T')[0];
+
+      const { data, error } = await supabase
+        .from('questionnaire_results')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('attempt_date', today)
+        .order('attempt_number', { ascending: true });
+
+      if (error) throw error;
+
+      return (data || []).map(result => ({
+        id: result.id,
+        totalScore: result.total_score,
+        categoryScores: {
+          comportamento: result.comportamento_score,
+          vida_cotidiana: result.vida_cotidiana_score,
+          relacoes: result.relacoes_score,
+          espiritual: result.espiritual_score
+        },
+        trackType: result.track_type,
+        completedAt: result.created_at,
+        totalTimeSpent: result.total_time_spent,
+        attemptNumber: result.attempt_number,
+        attemptDate: result.attempt_date
+      }));
+    } catch (error) {
+      console.error('Error fetching today attempts:', error);
+      return [];
+    }
+  };
+
+  const canRetakeTest = (lastResult: TestResult, todayAttempts: TestResult[]): { canRetake: boolean; daysLeft: number; remainingAttempts: number } => {
+    if (!lastResult) return { canRetake: true, daysLeft: 0, remainingAttempts: 3 };
     
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Check if we have attempts from today
+    if (todayAttempts.length > 0) {
+      const remainingAttempts = Math.max(0, 3 - todayAttempts.length);
+      return { canRetake: remainingAttempts > 0, daysLeft: 0, remainingAttempts };
+    }
+    
+    // Check track duration for period-based retakes
     const trackDuration = getTrackDuration(lastResult.trackType);
     const completedDate = new Date(lastResult.completedAt);
     const daysSinceCompletion = Math.floor((Date.now() - completedDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -67,23 +163,26 @@ export const useProgressTracking = () => {
     const canRetake = daysSinceCompletion >= trackDuration;
     const daysLeft = Math.max(0, trackDuration - daysSinceCompletion);
     
-    return { canRetake, daysLeft };
+    return { canRetake, daysLeft, remainingAttempts: canRetake ? 3 : 0 };
   };
 
-  const updateProgressData = () => {
-    const results = getStoredResults();
+  const updateProgressData = async () => {
+    const results = await getStoredResults();
+    const todayAttempts = await getTodayAttempts();
     const currentResult = results[0] || null;
     const previousResults = results.slice(1);
     
     let canRetake = true;
     let daysUntilRetake = 0;
     let trackDuration = 21;
+    let remainingAttempts = 3;
     
     if (currentResult) {
       trackDuration = getTrackDuration(currentResult.trackType);
-      const retakeInfo = canRetakeTest(currentResult);
+      const retakeInfo = canRetakeTest(currentResult, todayAttempts);
       canRetake = retakeInfo.canRetake;
       daysUntilRetake = retakeInfo.daysLeft;
+      remainingAttempts = retakeInfo.remainingAttempts;
     }
     
     setProgressData({
@@ -91,26 +190,30 @@ export const useProgressTracking = () => {
       previousResults,
       canRetake,
       daysUntilRetake,
-      trackDuration
+      trackDuration,
+      remainingAttempts,
+      todayAttempts
     });
   };
 
-  const getEvolutionData = () => {
-    const results = getStoredResults().reverse(); // Chronological order
+  const getEvolutionData = async () => {
+    const results = await getStoredResults();
+    const chronologicalResults = results.reverse();
     
-    return results.map((result, index) => ({
+    return chronologicalResults.map((result, index) => ({
       test: `Teste ${index + 1}`,
       date: new Date(result.completedAt).toLocaleDateString('pt-BR'),
       totalScore: result.totalScore,
       comportamento: result.categoryScores.comportamento,
       vida_cotidiana: result.categoryScores.vida_cotidiana,
       relacoes: result.categoryScores.relacoes,
-      espiritual: result.categoryScores.espiritual
+      espiritual: result.categoryScores.espiritual,
+      attempt: result.attemptNumber
     }));
   };
 
-  const getComparison = () => {
-    const results = getStoredResults();
+  const getComparison = async () => {
+    const results = await getStoredResults();
     if (results.length < 2) return null;
     
     const current = results[0];
@@ -128,13 +231,25 @@ export const useProgressTracking = () => {
       current,
       previous,
       improvement,
-      percentageChange: ((current.totalScore - previous.totalScore) / previous.totalScore) * 100
+      percentageChange: previous.totalScore > 0 ? ((current.totalScore - previous.totalScore) / previous.totalScore) * 100 : 0
     };
   };
 
-  const clearProgress = () => {
-    localStorage.removeItem('questionnaire_results');
-    updateProgressData();
+  const clearProgress = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('questionnaire_results')
+        .delete()
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      await updateProgressData();
+    } catch (error) {
+      console.error('Error clearing progress:', error);
+    }
   };
 
   useEffect(() => {
@@ -143,7 +258,7 @@ export const useProgressTracking = () => {
 
   return {
     progressData,
-    saveResult,
+    saveRetryProgress,
     getEvolutionData,
     getComparison,
     clearProgress,

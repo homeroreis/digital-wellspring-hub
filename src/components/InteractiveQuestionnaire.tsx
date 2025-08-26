@@ -279,42 +279,63 @@ const InteractiveQuestionnaire = () => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    const results = calculateResults();
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const results = calculateResults();
       
-      if (user) {
-        await supabase.from('questionnaire_results').insert({
+      // Save to Supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('User not authenticated');
+        return;
+      }
+
+      // Get today's attempts to determine attempt number
+      const today = new Date().toISOString().split('T')[0];
+      const { data: todayAttempts } = await supabase
+        .from('questionnaire_results')
+        .select('attempt_number')
+        .eq('user_id', user.id)
+        .eq('attempt_date', today)
+        .order('attempt_number', { ascending: false })
+        .limit(1);
+
+      const attemptNumber = (todayAttempts && todayAttempts.length > 0) 
+        ? todayAttempts[0].attempt_number + 1 
+        : 1;
+
+      const { error } = await supabase
+        .from('questionnaire_results')
+        .insert({
           user_id: user.id,
           total_score: results.totalScore,
-          total_time_spent: results.totalTimeSpent,
           comportamento_score: results.categoryScores.comportamento,
           vida_cotidiana_score: results.categoryScores.vida_cotidiana,
           relacoes_score: results.categoryScores.relacoes,
           espiritual_score: results.categoryScores.espiritual,
-          answers: results.answersData as any
+          total_time_spent: results.totalTimeSpent,
+          answers: results.answersData as any,
+          track_type: results.trackType,
+          attempt_number: attemptNumber,
+          attempt_date: today
         });
+
+      if (error) {
+        console.error('Error saving questionnaire results:', error);
+        return;
       }
-      
-      // Redirecionar para página de resultados personalizada com dados completos
-      const searchParams = new URLSearchParams({
-        score: results.totalScore.toString(),
-        track: results.trackType,
-        comportamento: results.categoryScores.comportamento.toString(),
-        vida_cotidiana: results.categoryScores.vida_cotidiana.toString(),
-        relacoes: results.categoryScores.relacoes.toString(),
-        espiritual: results.categoryScores.espiritual.toString(),
-        time: results.totalTimeSpent.toString()
+
+      navigate('/personalized-results', { 
+        state: { 
+          results: { ...results, attemptNumber, attemptDate: today },
+          isNewResult: true 
+        } 
       });
-      
-      navigate(`/personalized-results?${searchParams.toString()}`);
-      
     } catch (error) {
-      console.error('Erro ao salvar resultados:', error);
+      console.error('Error submitting questionnaire:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   const isAnswered = answers[currentQ.id] !== undefined;

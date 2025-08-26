@@ -363,6 +363,8 @@ export type Database = {
       questionnaire_results: {
         Row: {
           answers: Json
+          attempt_date: string
+          attempt_number: number
           comportamento_score: number
           created_at: string
           espiritual_score: number
@@ -370,11 +372,14 @@ export type Database = {
           relacoes_score: number
           total_score: number
           total_time_spent: number
+          track_type: string
           user_id: string
           vida_cotidiana_score: number
         }
         Insert: {
           answers: Json
+          attempt_date?: string
+          attempt_number?: number
           comportamento_score?: number
           created_at?: string
           espiritual_score?: number
@@ -382,11 +387,14 @@ export type Database = {
           relacoes_score?: number
           total_score: number
           total_time_spent?: number
+          track_type?: string
           user_id: string
           vida_cotidiana_score?: number
         }
         Update: {
           answers?: Json
+          attempt_date?: string
+          attempt_number?: number
           comportamento_score?: number
           created_at?: string
           espiritual_score?: number
@@ -394,6 +402,7 @@ export type Database = {
           relacoes_score?: number
           total_score?: number
           total_time_spent?: number
+          track_type?: string
           user_id?: string
           vida_cotidiana_score?: number
         }

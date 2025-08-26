@@ -17,7 +17,7 @@ const PersonalizedResultsPage = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [resultsSaved, setResultsSaved] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
-  const { progressData, saveResult, updateProgressData } = useProgressTracking();
+  const { progressData, saveRetryProgress, updateProgressData } = useProgressTracking();
 
   // Obter dados dos parâmetros da URL
   const totalScore = parseInt(searchParams.get('score') || '0');
@@ -221,7 +221,11 @@ const PersonalizedResultsPage = () => {
       };
       
       // Salvar no localStorage para comparações futuras
-      saveResult(currentResult);
+      await saveRetryProgress({
+        ...currentResult,
+        attemptNumber: 1,
+        attemptDate: new Date().toISOString().split('T')[0]
+      });
       
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -255,7 +259,7 @@ const PersonalizedResultsPage = () => {
     if (totalScore > 0) {
       saveResults();
     }
-  }, [totalScore, categoryScores, totalTimeSpent, trackType, resultsSaved, saveResult]);
+  }, [totalScore, categoryScores, totalTimeSpent, trackType, resultsSaved, saveRetryProgress]);
 
   const handleRetakeTest = () => {
     if (progressData.canRetake) {

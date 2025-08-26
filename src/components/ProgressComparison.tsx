@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, Minus, Calendar, Trophy, Target } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,9 +6,40 @@ import { useProgressTracking } from '@/hooks/useProgressTracking';
 
 const ProgressComparison = () => {
   const { getEvolutionData, getComparison } = useProgressTracking();
+  const [evolutionData, setEvolutionData] = useState<any[]>([]);
+  const [comparison, setComparison] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const evolutionData = getEvolutionData();
-  const comparison = getComparison();
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const [evolution, comp] = await Promise.all([
+          getEvolutionData(),
+          getComparison()
+        ]);
+        setEvolutionData(evolution);
+        setComparison(comp);
+      } catch (error) {
+        console.error('Error loading progress data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando dados de progresso...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (evolutionData.length < 2) {
     return (

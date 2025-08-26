@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import InteractiveQuestionnaire from "@/components/InteractiveQuestionnaire";
+import RetryAttemptDisplay from "@/components/RetryAttemptDisplay";
 
 const Test = () => {
   const navigate = useNavigate();
@@ -31,6 +32,9 @@ const Test = () => {
       <Navbar />
 
       <main className="flex-1">
+        <div className="container mx-auto px-4 py-6">
+          <RetryAttemptDisplay />
+        </div>
         <InteractiveQuestionnaire />
       </main>
     </div>

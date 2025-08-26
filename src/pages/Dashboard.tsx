@@ -9,13 +9,47 @@ import { Button } from "@/components/ui/button";
 import { programTracks } from "@/data/programs";
 
 const Dashboard = () => {
-  const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
+  const [recommendedTrack, setRecommendedTrack] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) navigate("/auth", { replace: true, state: { redirectTo: "/dashboard" } });
-    });
+    const checkAuthAndLoadTrack = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth", { replace: true, state: { redirectTo: "/dashboard" } });
+        return;
+      }
+
+      // Fetch user's latest questionnaire result to determine recommended track
+      try {
+        const { data, error } = await supabase
+          .from('questionnaire_results')
+          .select('track_type, total_score')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching questionnaire results:', error);
+        }
+
+        if (data) {
+          setRecommendedTrack(data.track_type);
+        } else {
+          // No questionnaire completed yet, redirect to test
+          navigate('/test', { replace: true });
+          return;
+        }
+      } catch (error) {
+        console.error('Error loading recommended track:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuthAndLoadTrack();
   }, [navigate]);
 
   const jsonLd = {
@@ -38,52 +72,39 @@ const Dashboard = () => {
 
       <main className="flex-1 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          
-          {!selectedTrack ? (
-            <div className="space-y-6">
-              <p className="text-muted-foreground">Selecione uma trilha para começar sua jornada de transformação:</p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {programTracks.map((track) => (
-                  <Card key={track.slug} className="cursor-pointer hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <CardTitle>{track.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
-                        {track.description}
-                      </p>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {track.level}
-                        </span>
-                      </div>
-                      <Button 
-                        className="w-full" 
-                        onClick={() => setSelectedTrack(track.slug)}
-                      >
-                        Começar Trilha
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
+          {isLoading ? (
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Carregando sua trilha personalizada...</p>
               </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setSelectedTrack(null)}
-                className="mb-4"
-              >
-                ← Voltar às Trilhas
-              </Button>
-              
+          ) : recommendedTrack ? (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h1 className="text-3xl font-bold mb-4">
+                  Sua Trilha Personalizada
+                </h1>
+                <p className="text-muted-foreground">
+                  Baseada no seu resultado do questionário
+                </p>
+              </div>
               <TracksPanel 
-                trackSlug={selectedTrack} 
-                trackTitle={programTracks.find(t => t.slug === selectedTrack)?.title || selectedTrack}
+                trackSlug={recommendedTrack} 
+                trackTitle={programTracks.find(t => t.slug === recommendedTrack)?.title || recommendedTrack}
               />
+            </div>
+          ) : (
+            <div className="text-center space-y-6">
+              <h1 className="text-3xl font-bold mb-4">
+                Complete o Questionário
+              </h1>
+              <p className="text-muted-foreground mb-8">
+                Responda ao questionário para receber sua trilha personalizada
+              </p>
+              <Button onClick={() => navigate('/test')}>
+                Fazer Questionário
+              </Button>
             </div>
           )}
         </div>
