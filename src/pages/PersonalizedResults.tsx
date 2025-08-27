@@ -227,7 +227,8 @@ const PersonalizedResultsPage = () => {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          const { error } = await supabase
+          // Salvar resultado do questionário
+          const { error: resultError } = await supabase
             .from('questionnaire_results')
             .insert({
               user_id: user.id,
@@ -237,15 +238,49 @@ const PersonalizedResultsPage = () => {
               relacoes_score: categoryScores.relacoes,
               espiritual_score: categoryScores.espiritual,
               total_time_spent: totalTimeSpent,
-              answers: { track_type: trackType } // Salvar tipo de trilha recomendada
+              track_type: trackType, // Salvar tipo de trilha recomendada
+              answers: { 
+                track_type: trackType,
+                timestamp: new Date().toISOString()
+              }
             });
 
-          if (!error) {
-            setResultsSaved(true);
-            console.log('Resultados salvos com sucesso');
+          if (!resultError) {
+            // Criar/atualizar perfil do usuário
+            const { error: profileError } = await supabase
+              .from('user_profiles')
+              .upsert({
+                user_id: user.id,
+                test_results: {
+                  totalScore,
+                  categoryScores,
+                  trackType,
+                  timestamp: new Date().toISOString()
+                },
+                updated_at: new Date().toISOString()
+              });
+            
+            if (!profileError) {
+              setResultsSaved(true);
+              console.log('Resultados e perfil salvos com sucesso');
+              
+              // Atualizar nome do usuário se disponível
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', user.id)
+                .single();
+              
+              if (profile?.full_name) {
+                userData.name = profile.full_name;
+              }
+            }
           } else {
-            console.error('Erro ao salvar resultados:', error);
+            console.error('Erro ao salvar resultados:', resultError);
           }
+        } else {
+          // Salvar em localStorage se não estiver logado
+          localStorage.setItem('pendingTestResult', JSON.stringify(currentResult));
         }
       } catch (error) {
         console.error('Erro ao conectar com o banco:', error);
@@ -261,9 +296,66 @@ const PersonalizedResultsPage = () => {
     navigate('/test');
   };
 
-  const startTrack = () => {
-    // Redirecionar para início da trilha com onboarding específico
-    navigate(`/track/${userData.trackType}?from=results`);
+  const startTrack = async () => {
+    try {
+      // Garante que o resultado foi salvo antes de prosseguir
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Verifica se o perfil foi criado
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!profile) {
+          // Se não tem perfil, cria um agora
+          await supabase
+            .from('user_profiles')
+            .insert({
+              user_id: user.id,
+              test_results: {
+                totalScore,
+                categoryScores,
+                trackType,
+                timestamp: new Date().toISOString()
+              }
+            });
+        }
+        
+        // Verifica se precisa de onboarding
+        const { data: preferences } = await supabase
+          .from('user_preferences')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .eq('track_slug', userData.trackType)
+          .single();
+        
+        if (!preferences?.onboarding_completed) {
+          // Precisa fazer onboarding primeiro
+          navigate(`/onboarding?track=${userData.trackType}`);
+        } else {
+          // Já fez onboarding, vai direto para a trilha
+          navigate(`/track/${userData.trackType}`);
+        }
+      } else {
+        // Não está logado, vai para auth com redirect
+        navigate('/auth', { 
+          state: { 
+            redirectTo: `/track/${userData.trackType}`,
+            testResult: { totalScore, categoryScores, trackType }
+          } 
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao iniciar trilha:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao iniciar sua trilha. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
