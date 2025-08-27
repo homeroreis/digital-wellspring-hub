@@ -13,11 +13,13 @@ import { useToast } from '@/hooks/use-toast';
 
 interface RenovacaoOnboardingProps {
   userId: string;
+  userScore: number;
   onComplete: () => void;
 }
 
 const RenovacaoOnboarding: React.FC<RenovacaoOnboardingProps> = ({
   userId,
+  userScore,
   onComplete
 }) => {
   const [currentStep, setCurrentStep] = useState(0);

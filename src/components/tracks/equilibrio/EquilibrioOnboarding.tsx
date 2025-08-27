@@ -10,11 +10,13 @@ import { useToast } from '@/hooks/use-toast';
 
 interface EquilibrioOnboardingProps {
   userId: string;
+  userScore: number;
   onComplete: () => void;
 }
 
 const EquilibrioOnboarding: React.FC<EquilibrioOnboardingProps> = ({
   userId,
+  userScore,
   onComplete
 }) => {
   const [currentStep, setCurrentStep] = useState(0);

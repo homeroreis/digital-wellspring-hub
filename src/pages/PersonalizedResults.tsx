@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useProgressTracking } from '@/hooks/useProgressTracking';
+import { useToast } from '@/hooks/use-toast';
 
 const PersonalizedResultsPage = () => {
   const [searchParams] = useSearchParams();
@@ -18,6 +19,7 @@ const PersonalizedResultsPage = () => {
   const [resultsSaved, setResultsSaved] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
   const { progressData, saveTestResult, updateProgressData } = useProgressTracking();
+  const { toast } = useToast();
 
   // Obter dados dos parâmetros da URL
   const totalScore = parseInt(searchParams.get('score') || '0');
@@ -247,7 +249,7 @@ const PersonalizedResultsPage = () => {
 
           if (!resultError) {
             // Criar/atualizar perfil do usuário
-            const { error: profileError } = await supabase
+            const { error: profileError } = await (supabase as any)
               .from('user_profiles')
               .upsert({
                 user_id: user.id,
@@ -303,7 +305,7 @@ const PersonalizedResultsPage = () => {
       
       if (user) {
         // Verifica se o perfil foi criado
-        const { data: profile } = await supabase
+        const { data: profile } = await (supabase as any)
           .from('user_profiles')
           .select('id')
           .eq('user_id', user.id)
@@ -311,7 +313,7 @@ const PersonalizedResultsPage = () => {
         
         if (!profile) {
           // Se não tem perfil, cria um agora
-          await supabase
+          await (supabase as any)
             .from('user_profiles')
             .insert({
               user_id: user.id,

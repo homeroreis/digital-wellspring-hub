@@ -154,11 +154,11 @@ const TrackRouter: React.FC<TrackRouterProps> = ({ userId, trackSlug, userScore 
   if (!hasCompletedOnboarding) {
     switch (trackSlug) {
       case 'liberdade':
-        return <LiberdadeOnboarding userId={userId} onComplete={handleOnboardingComplete} />;
+        return <LiberdadeOnboarding userId={userId} userScore={userScore} onComplete={handleOnboardingComplete} />;
       case 'equilibrio':
-        return <EquilibrioOnboarding userId={userId} onComplete={handleOnboardingComplete} />;
+        return <EquilibrioOnboarding userId={userId} userScore={userScore} onComplete={handleOnboardingComplete} />;
       case 'renovacao':
-        return <RenovacaoOnboarding userId={userId} onComplete={handleOnboardingComplete} />;
+        return <RenovacaoOnboarding userId={userId} userScore={userScore} onComplete={handleOnboardingComplete} />;
       default:
         return (
           <div className="min-h-[80vh] flex items-center justify-center">
