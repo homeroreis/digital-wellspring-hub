@@ -1,141 +1,110 @@
+import React, { useState, useEffect } from 'react';
 import { TracksPanel } from "@/components/TracksPanel";
 import Navbar from "@/components/Navbar";
-import { Helmet } from "react-helmet-async";
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { programTracks } from "@/data/programs";
+import { Loader2 } from "lucide-react";
 
 const Dashboard = () => {
   const [recommendedTrack, setRecommendedTrack] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuthAndLoadTrack = async () => {
+    checkAuthAndLoadData();
+  }, []);
+
+  const checkAuthAndLoadData = async () => {
+    try {
+      // Verificar sessão
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (!session) {
-        navigate("/auth", { replace: true, state: { redirectTo: "/dashboard" } });
+        navigate("/auth", { replace: true });
         return;
       }
 
-      // Fetch user's latest questionnaire result to determine recommended track
-      try {
-        console.log('Fetching results for user:', session.user.id);
-        
-        // Try to get full questionnaire result first
-        const { data: fullTest, error: fullTestError } = await supabase
-          .from('questionnaire_results')
-          .select('track_type, total_score, created_at')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+      // Carregar perfil do usuário
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single();
 
-        console.log('Full test result:', fullTest, 'Error:', fullTestError);
+      setUserProfile(profile);
 
-        if (fullTestError && fullTestError.code !== 'PGRST116') {
-          console.error('Error fetching questionnaire results:', fullTestError);
-        }
+      // Buscar resultado do questionário
+      const { data: result } = await supabase
+        .from('questionnaire_results')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-        if (fullTest) {
-          console.log('Setting recommended track from full test:', fullTest.track_type);
-          setRecommendedTrack(fullTest.track_type);
-        } else {
-          // Try to get quick test result
-          const { data: quickTest, error: quickTestError } = await supabase
-            .from('quick_test_results')
-            .select('recommended_track, total_score, created_at')
-            .eq('user_id', session.user.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          console.log('Quick test result:', quickTest, 'Error:', quickTestError);
-
-          if (quickTestError && quickTestError.code !== 'PGRST116') {
-            console.error('Error fetching quick test results:', quickTestError);
-          }
-
-          if (quickTest) {
-            console.log('Setting recommended track from quick test:', quickTest.recommended_track);
-            setRecommendedTrack(quickTest.recommended_track);
-          } else {
-            console.log('No test results found, redirecting to test');
-            // No test completed yet, redirect to test
-            navigate('/test', { replace: true });
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Error loading recommended track:', error);
-      } finally {
-        setIsLoading(false);
+      if (result) {
+        setRecommendedTrack(result.track_type);
       }
-    };
-
-    checkAuthAndLoadTrack();
-  }, [navigate]);
-
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'ProfilePage',
-    name: 'Painel da Trilha',
-    description: 'Acompanhe seu progresso, próximas ações e conteúdo da trilha.'
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Helmet>
-        <title>Painel da Trilha — Progresso e Ações</title>
-        <meta name="description" content="Acompanhe seu progresso na trilha e veja suas próximas ações." />
-        <link rel="canonical" href={window.location.origin + "/dashboard"} />
-        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      </Helmet>
-
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50">
       <Navbar />
-
-      <main className="flex-1 py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center min-h-[60vh]">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Carregando sua trilha personalizada...</p>
-              </div>
-            </div>
-          ) : recommendedTrack ? (
-            <div className="space-y-6">
-              <div className="text-center">
-                <h1 className="text-3xl font-bold mb-4">
-                  Sua Trilha Personalizada
-                </h1>
-                <p className="text-muted-foreground">
-                  Baseada no seu resultado do questionário
-                </p>
-              </div>
-              <TracksPanel 
-                trackSlug={recommendedTrack} 
-                trackTitle={programTracks.find(t => t.slug === recommendedTrack)?.title || recommendedTrack}
-                maxDays={programTracks.find(t => t.slug === recommendedTrack)?.durationDays || 21}
-              />
-            </div>
-          ) : (
-            <div className="text-center space-y-6">
-              <h1 className="text-3xl font-bold mb-4">
-                Complete o Questionário
-              </h1>
-              <p className="text-muted-foreground mb-8">
-                Responda ao questionário para receber sua trilha personalizada
-              </p>
-              <Button onClick={() => navigate('/test')}>
-                Fazer Questionário
-              </Button>
-            </div>
-          )}
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">
+            Olá, {userProfile?.full_name || 'Usuário'}!
+          </h1>
+          <p className="text-muted-foreground">
+            {recommendedTrack 
+              ? 'Continue sua jornada de transformação digital'
+              : 'Complete o questionário para receber sua trilha personalizada'}
+          </p>
         </div>
+
+        {recommendedTrack ? (
+          <TracksPanel 
+            trackSlug={recommendedTrack}
+            trackTitle={
+              recommendedTrack === 'liberdade' ? 'Trilha Liberdade (7 dias)' :
+              recommendedTrack === 'equilibrio' ? 'Trilha Equilíbrio (21 dias)' :
+              'Trilha Renovação (40 dias)'
+            }
+            maxDays={
+              recommendedTrack === 'liberdade' ? 7 :
+              recommendedTrack === 'equilibrio' ? 21 : 40
+            }
+          />
+        ) : (
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle>Comece Sua Jornada</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p>Para receber sua trilha personalizada, complete nosso questionário de avaliação.</p>
+              <Button onClick={() => navigate('/test')} size="lg" className="w-full">
+                Iniciar Questionário
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );
