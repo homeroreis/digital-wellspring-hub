@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Calendar, Trophy, Flame, Target, CheckCircle, Clock, Lock, ChevronLeft, ChevronRight, PlayCircle, BookOpen, Heart, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,10 +39,17 @@ const getActivityIcon = (type: string) => {
   }
 };
 
-export const TracksPanel = ({ trackSlug, trackTitle, maxDays = 21 }: TracksPanelProps) => {
+const PersonalizedResults = () => {
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
+  
+  // Get track data from URL params or use defaults
+  const trackSlug = searchParams.get('track') || 'equilibrio';
+  const trackTitle = searchParams.get('title') || 'Trilha Equilíbrio';
+  const maxDays = parseInt(searchParams.get('maxDays') || '21');
+  
   const [selectedDay, setSelectedDay] = useState(1);
   const [currentWeek, setCurrentWeek] = useState(1);
-  const { toast } = useToast();
 
   const totalWeeks = Math.ceil(maxDays / 7);
   const weekStartDay = (currentWeek - 1) * 7 + 1;
@@ -397,3 +405,5 @@ export const TracksPanel = ({ trackSlug, trackTitle, maxDays = 21 }: TracksPanel
     </div>
   );
 };
+
+export default PersonalizedResults;
