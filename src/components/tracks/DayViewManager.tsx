@@ -1,194 +1,170 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
+import { PersonalizationService, PersonalizedContent } from '@/services/personalizationEngine';
+import { Calendar, CheckCircle, Clock, Star, Trophy, Target, PlayCircle, BookOpen, Heart, Zap, Gift, Lock, Unlock, ChevronRight, BarChart3, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Clock, Star, ArrowLeft, ArrowRight, Award, Target } from 'lucide-react';
-import { liberdadeContent } from '@/data/tracks/liberdade-content';
-import { equilibrioTrackData } from '@/data/tracks/equilibrio-content';
-import { renovacaoTrackData } from '@/data/tracks/renovacao-content';
-
-interface DayContent {
-  day_number: number;
-  title: string;
-  objective: string;
-  devotional_verse: string;
-  devotional_reflection: string;
-  devotional_prayer: string;
-  main_activity_title: string;
-  main_activity_content: string;
-  main_challenge_title: string;
-  main_challenge_content: string;
-  bonus_activity_title?: string;
-  bonus_activity_content?: string;
-  max_points: number;
-  difficulty_level: number;
-  activities: Array<{
-    title: string;
-    description: string;
-    points: number;
-    required: boolean;
-  }>;
-}
+import { Badge } from '@/components/ui/badge';
 
 interface DayViewManagerProps {
   userId: string;
   trackSlug: string;
-  dayNumber: number;
-  onNavigate: (day: number) => void;
-  onComplete: () => void;
+  userScore: number;
+  userProfile?: any;
+  currentDay?: number;
 }
 
 const DayViewManager: React.FC<DayViewManagerProps> = ({
   userId,
   trackSlug,
-  dayNumber,
-  onNavigate,
-  onComplete
+  userScore,
+  userProfile,
+  currentDay = 1
 }) => {
-  const [dayContent, setDayContent] = useState<DayContent | null>(null);
-  const [completedActivities, setCompletedActivities] = useState<Set<number>>(new Set());
-  const [loading, setLoading] = useState(true);
-  const [totalPoints, setTotalPoints] = useState(0);
-  const [maxDays, setMaxDays] = useState(7);
+  const { toast } = useToast();
+  const [selectedDay, setSelectedDay] = useState(currentDay);
+  const [loading, setLoading] = useState(false);
+  const [dayContent, setDayContent] = useState<PersonalizedContent | null>(null);
+  const [userProgress, setUserProgress] = useState({
+    completedDays: userProfile?.progressData?.completedDays || [],
+    totalPoints: userProfile?.progressData?.totalPoints || 0,
+    streak: userProfile?.progressData?.streak || 0,
+    level: userProfile?.progressData?.level || 1,
+    currentDay: currentDay
+  });
+
+  // Informações da trilha
+  const trackInfo = {
+    liberdade: {
+      name: 'Trilha Liberdade',
+      subtitle: 'Uso Consciente',
+      duration: 7,
+      color: '#4CAF50',
+      icon: CheckCircle,
+    },
+    equilibrio: {
+      name: 'Trilha Equilíbrio',
+      subtitle: 'Uso em Alerta',
+      duration: 21,
+      color: '#FFC107',
+      icon: Target,
+    },
+    renovacao: {
+      name: 'Trilha Renovação',
+      subtitle: 'Uso Problemático',
+      duration: 40,
+      color: '#F44336',
+      icon: Zap,
+    }
+  }[trackSlug] || {
+    name: 'Trilha',
+    subtitle: '',
+    duration: 7,
+    color: '#4CAF50',
+    icon: CheckCircle,
+  };
 
   useEffect(() => {
-    loadDayContent();
-    loadUserProgress();
-  }, [trackSlug, dayNumber]);
+    loadDayContent(selectedDay);
+  }, [selectedDay, userId]);
 
-  const loadDayContent = () => {
-    let content: DayContent | undefined;
-    let maxDaysForTrack = 7;
-
+  const loadDayContent = async (dayNumber: number) => {
     try {
-      switch (trackSlug) {
-        case 'liberdade':
-          content = liberdadeContent.find(c => c.day_number === dayNumber);
-          maxDaysForTrack = 7;
-          break;
-        case 'equilibrio':
-          // Para equilibrio, usar dados mock por enquanto
-          if (dayNumber <= 21) {
-            content = {
-              day_number: dayNumber,
-              title: `Dia ${dayNumber} - Equilíbrio`,
-              objective: "Desenvolver uso consciente da tecnologia",
-              devotional_verse: "Tudo tem o seu tempo determinado - Eclesiastes 3:1",
-              devotional_reflection: "Hoje é um dia para encontrar equilíbrio digital.",
-              devotional_prayer: "Senhor, me ajude a usar a tecnologia com sabedoria.",
-              main_activity_title: "Atividade de Equilíbrio",
-              main_activity_content: "Pratique 30 minutos de atividade sem telas.",
-              main_challenge_title: "Desafio do Equilíbrio",
-              main_challenge_content: "Mantenha o celular em silêncio por 2 horas.",
-              max_points: 100,
-              difficulty_level: 2,
-              activities: [
-                { title: "Devocional completo", description: "Leia verso, reflexão e oração", points: 20, required: true },
-                { title: "Atividade principal", description: "Atividade de Equilíbrio", points: 40, required: true },
-                { title: "Desafio do dia", description: "Desafio do Equilíbrio", points: 30, required: true },
-                { title: "Atividade bônus", description: "Atividade opcional", points: 10, required: false }
-              ]
-            };
-          }
-          maxDaysForTrack = 21;
-          break;
-        case 'renovacao':
-          // Para renovacao, usar dados mock por enquanto  
-          if (dayNumber <= 40) {
-            content = {
-              day_number: dayNumber,
-              title: `Dia ${dayNumber} - Renovação`,
-              objective: "Transformação profunda e renovação total",
-              devotional_verse: "Portanto, se alguém está em Cristo, é nova criatura - 2 Coríntios 5:17",
-              devotional_reflection: "Hoje é um dia de renovação e transformação profunda.",
-              devotional_prayer: "Senhor, renova-me completamente. Quebra toda dependência.",
-              main_activity_title: "Atividade de Renovação",
-              main_activity_content: "Pratique 60 minutos de atividades sem qualquer tela.",
-              main_challenge_title: "Desafio Radical",
-              main_challenge_content: "Mantenha-se longe de todas as telas por 4 horas.",
-              max_points: 200,
-              difficulty_level: 5,
-              activities: [
-                { title: "Devocional completo", description: "Leia verso, reflexão e oração", points: 30, required: true },
-                { title: "Atividade principal", description: "Atividade de Renovação", points: 50, required: true },
-                { title: "Desafio crítico", description: "Desafio Radical", points: 40, required: true },
-                { title: "Atividade bônus", description: "Atividade opcional", points: 20, required: false }
-              ]
-            };
-          }
-          maxDaysForTrack = 40;
-          break;
-      }
-
-      setDayContent(content || null);
-      setMaxDays(maxDaysForTrack);
+      setLoading(true);
+      const content = await PersonalizationService.getPersonalizedDay(userId, dayNumber);
+      setDayContent(content);
     } catch (error) {
-      console.error('Erro ao carregar conteúdo do dia:', error);
-      setDayContent(null);
+      console.error('Erro ao carregar conteúdo:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar o conteúdo do dia",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const loadUserProgress = async () => {
-    try {
-      const { data } = await supabase
-        .from('user_activity_progress')
-        .select('activity_index, points_earned')
-        .eq('user_id', userId)
-        .eq('track_slug', trackSlug)
-        .eq('day_number', dayNumber);
-
-      if (data) {
-        const completed = new Set(data.map(item => item.activity_index));
-        const points = data.reduce((sum, item) => sum + item.points_earned, 0);
-        setCompletedActivities(completed);
-        setTotalPoints(points);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar progresso:', error);
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'video': return <PlayCircle className="w-5 h-5" />;
+      case 'article': return <BookOpen className="w-5 h-5" />;
+      case 'exercise': return <Target className="w-5 h-5" />;
+      case 'reflection': return <Heart className="w-5 h-5" />;
+      case 'challenge': return <Trophy className="w-5 h-5" />;
+      case 'prayer': return <Heart className="w-5 h-5" />;
+      case 'meditation': return <Zap className="w-5 h-5" />;
+      default: return <CheckCircle className="w-5 h-5" />;
     }
   };
 
-  const handleActivityComplete = async (activityIndex: number, points: number) => {
-    if (completedActivities.has(activityIndex)) return;
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'reflection': return 'text-purple-600 bg-purple-100';
+      case 'exercise': return 'text-blue-600 bg-blue-100';
+      case 'meditation': return 'text-green-600 bg-green-100';
+      case 'challenge': return 'text-orange-600 bg-orange-100';
+      case 'prayer': return 'text-indigo-600 bg-indigo-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
 
+  const completeActivity = async (activityId: string, index: number) => {
     try {
-      await supabase.from('user_activity_progress').insert({
-        user_id: userId,
-        track_slug: trackSlug,
-        day_number: dayNumber,
-        activity_index: activityIndex,
-        activity_type: 'daily',
-        activity_title: dayContent?.activities[activityIndex]?.title || '',
-        points_earned: points
-      });
-
-      setCompletedActivities(prev => new Set([...prev, activityIndex]));
-      setTotalPoints(prev => prev + points);
-
-      // Update track progress - simplified for now
-      const { data: existingProgress } = await supabase
-        .from('user_track_progress')
-        .select('total_points')
-        .eq('user_id', userId)
-        .eq('track_slug', trackSlug)
-        .single();
-
-      if (existingProgress) {
-        await supabase
-          .from('user_track_progress')
-          .update({ 
-            total_points: existingProgress.total_points + points,
-            last_activity_at: new Date().toISOString()
-          })
-          .eq('user_id', userId)
-          .eq('track_slug', trackSlug);
+      await PersonalizationService.completeActivity(userId, selectedDay, activityId);
+      
+      // Atualiza estado local
+      if (dayContent) {
+        const updatedActivities = [...dayContent.activities];
+        updatedActivities[index] = { ...updatedActivities[index], completed: true };
+        setDayContent({ ...dayContent, activities: updatedActivities });
       }
 
+      toast({
+        title: "Atividade completa!",
+        description: "Continue assim! 🎉",
+      });
     } catch (error) {
-      console.error('Erro ao marcar atividade como completa:', error);
+      console.error('Erro ao completar atividade:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível marcar a atividade como completa",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const completeDayProgress = async () => {
+    if (!dayContent) return;
+
+    try {
+      await PersonalizationService.completeDay(userId, selectedDay, dayContent.rewards.points);
+      
+      setUserProgress(prev => ({
+        ...prev,
+        completedDays: [...prev.completedDays, selectedDay],
+        totalPoints: prev.totalPoints + dayContent.rewards.points,
+        streak: prev.streak + 1,
+        currentDay: selectedDay + 1
+      }));
+
+      toast({
+        title: "Dia completo! 🎊",
+        description: `Você ganhou ${dayContent.rewards.points} pontos!`,
+      });
+
+      // Avança para o próximo dia se disponível
+      if (selectedDay < trackInfo.duration) {
+        setSelectedDay(selectedDay + 1);
+      }
+    } catch (error) {
+      console.error('Erro ao completar dia:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar seu progresso",
+        variant: "destructive",
+      });
     }
   };
 
@@ -196,239 +172,303 @@ const DayViewManager: React.FC<DayViewManagerProps> = ({
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 animate-spin mx-auto mb-4 border-4 border-primary border-t-transparent rounded-full"></div>
-          <p>Carregando conteúdo do dia...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Carregando conteúdo personalizado...</p>
         </div>
       </div>
     );
   }
-
-  if (!dayContent) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="max-w-md mx-4">
-          <CardContent className="p-8 text-center">
-            <Target className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-2 text-red-600">Conteúdo não encontrado</h2>
-            <p className="text-muted-foreground mb-4">
-              Não foi possível carregar o conteúdo para o dia {dayNumber} da trilha {trackSlug}.
-            </p>
-            <Button onClick={() => onNavigate(1)} variant="outline">
-              Voltar ao início
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const progressPercentage = (totalPoints / dayContent.max_points) * 100;
-  const isCompleted = progressPercentage >= 100;
-  const requiredActivitiesCompleted = dayContent.activities
-    .filter(activity => activity.required)
-    .every((_, index) => completedActivities.has(index));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Button
-              onClick={() => onNavigate(Math.max(1, dayNumber - 1))}
-              variant="outline"
-              disabled={dayNumber <= 1}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Dia Anterior
-            </Button>
-            
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Dia {dayNumber} - {dayContent.title}
-              </h1>
-              <p className="text-gray-600 mt-1">{dayContent.objective}</p>
-            </div>
-
-            <Button
-              onClick={() => onNavigate(Math.min(maxDays, dayNumber + 1))}
-              variant="outline"
-              disabled={dayNumber >= maxDays}
-            >
-              Próximo Dia
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-
-          {/* Progress */}
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold">Progresso do Dia</span>
-              <span className="text-2xl font-bold text-primary">
-                {totalPoints}/{dayContent.max_points} pts
-              </span>
-            </div>
-            <Progress value={progressPercentage} className="h-3" />
-            {isCompleted && (
-              <div className="flex items-center justify-center mt-2 text-green-600">
-                <CheckCircle className="w-5 h-5 mr-2" />
-                <span className="font-semibold">Dia Concluído!</span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div 
+                className="w-12 h-12 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: trackInfo.color }}
+              >
+                <trackInfo.icon className="w-6 h-6 text-white" />
               </div>
-            )}
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {trackInfo.name}
+                </h1>
+                <p className="text-gray-600">{trackInfo.subtitle}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">{userProgress.streak}</div>
+                <div className="text-sm text-gray-600">Dias consecutivos</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold" style={{ color: trackInfo.color }}>
+                  {userProgress.totalPoints}
+                </div>
+                <div className="text-sm text-gray-600">Pontos</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">Nível {userProgress.level}</div>
+                <div className="text-sm text-gray-600">
+                  {userProgress.level < 3 ? 'Iniciante' : userProgress.level < 7 ? 'Intermediário' : 'Avançado'}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Devotional */}
-        <Card className="mb-6 border-l-4 border-l-purple-500">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-4 flex items-center">
-              <Star className="w-6 h-6 mr-2 text-purple-500" />
-              Devocional do Dia
-            </h2>
-            <div className="space-y-4">
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <p className="font-semibold text-purple-800 italic">
-                  "{dayContent.devotional_verse}"
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Reflexão:</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  {dayContent.devotional_reflection}
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Oração:</h3>
-                <p className="text-gray-700 italic leading-relaxed">
-                  {dayContent.devotional_prayer}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Sidebar - Progress Overview */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Progress Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Seu Progresso</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span>Progresso Geral</span>
+                      <span>{Math.round((userProgress.completedDays.length / trackInfo.duration) * 100)}%</span>
+                    </div>
+                    <Progress 
+                      value={(userProgress.completedDays.length / trackInfo.duration) * 100}
+                      className="h-3"
+                    />
+                  </div>
 
-        {/* Main Activity */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-4 flex items-center">
-              <Target className="w-6 h-6 mr-2 text-blue-500" />
-              {dayContent.main_activity_title}
-            </h2>
-            <div className="prose max-w-none">
-              <div className="whitespace-pre-wrap text-gray-700">
-                {dayContent.main_activity_content}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Challenge */}
-        <Card className="mb-6 border-l-4 border-l-orange-500">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-4 flex items-center">
-              <Award className="w-6 h-6 mr-2 text-orange-500" />
-              {dayContent.main_challenge_title}
-            </h2>
-            <div className="prose max-w-none">
-              <div className="whitespace-pre-wrap text-gray-700">
-                {dayContent.main_challenge_content}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Bonus Activity */}
-        {dayContent.bonus_activity_title && (
-          <Card className="mb-6 border-l-4 border-l-green-500">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center">
-                <Star className="w-6 h-6 mr-2 text-green-500" />
-                {dayContent.bonus_activity_title}
-              </h2>
-              <div className="prose max-w-none">
-                <div className="whitespace-pre-wrap text-gray-700">
-                  {dayContent.bonus_activity_content}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Activities Checklist */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-4">Atividades do Dia</h2>
-            <div className="space-y-3">
-              {dayContent.activities.map((activity, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
-                    completedActivities.has(index)
-                      ? 'border-green-200 bg-green-50'
-                      : 'border-gray-200 bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => handleActivityComplete(index, activity.points)}
-                      disabled={completedActivities.has(index)}
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                        completedActivities.has(index)
-                          ? 'border-green-500 bg-green-500'
-                          : 'border-gray-300 hover:border-primary'
-                      }`}
-                    >
-                      {completedActivities.has(index) && (
-                        <CheckCircle className="w-4 h-4 text-white" />
-                      )}
-                    </button>
-                    <div>
-                      <h3 className="font-semibold">{activity.title}</h3>
-                      <p className="text-sm text-gray-600">{activity.description}</p>
+                  <div className="grid grid-cols-2 gap-4 pt-4">
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <div className="text-xl font-bold text-gray-900">
+                        {userProgress.completedDays.length}
+                      </div>
+                      <div className="text-sm text-gray-600">Dias completos</div>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <div className="text-xl font-bold text-gray-900">
+                        {trackInfo.duration - userProgress.completedDays.length}
+                      </div>
+                      <div className="text-sm text-gray-600">Dias restantes</div>
                     </div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Calendar */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Calendário da Semana</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-7 gap-2">
+                  {Array.from({ length: Math.min(7, trackInfo.duration) }, (_, i) => {
+                    const dayNum = i + 1 + Math.floor((selectedDay - 1) / 7) * 7;
+                    if (dayNum > trackInfo.duration) return null;
+                    
+                    const isCompleted = userProgress.completedDays.includes(dayNum);
+                    const isCurrent = dayNum === selectedDay;
+                    const isLocked = dayNum > userProgress.currentDay;
+                    
+                    return (
+                      <button
+                        key={dayNum}
+                        className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-all ${
+                          isCompleted 
+                            ? 'bg-green-500 text-white' 
+                            : isCurrent 
+                              ? 'bg-yellow-500 text-white ring-2 ring-yellow-200' 
+                              : isLocked
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                        }`}
+                        onClick={() => !isLocked && setSelectedDay(dayNum)}
+                        disabled={isLocked}
+                      >
+                        {isCompleted ? <CheckCircle className="w-4 h-4" /> : 
+                         isLocked ? <Lock className="w-4 h-4" /> : dayNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                <div className="mt-4 text-xs text-gray-600 space-y-1">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-green-500 rounded mr-2"></div>
+                    Completo
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-yellow-500 rounded mr-2"></div>
+                    Hoje
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-gray-100 rounded mr-2"></div>
+                    Bloqueado
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content - Today's Activity */}
+          <div className="lg:col-span-2">
+            <Card className="overflow-hidden">
+              {/* Day Header */}
+              <div 
+                className="px-8 py-6 text-white"
+                style={{ backgroundColor: trackInfo.color }}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm opacity-90">Dia {selectedDay}</div>
+                    <h2 className="text-2xl font-bold">{dayContent?.title}</h2>
+                    <p className="opacity-90 mt-1">{dayContent?.description}</p>
+                  </div>
+                  
                   <div className="text-right">
-                    <div className="font-bold text-primary">{activity.points} pts</div>
-                    <div className="text-xs text-gray-500">
-                      {activity.required ? 'Obrigatória' : 'Opcional'}
-                    </div>
+                    <div className="text-3xl font-bold">{dayContent?.rewards.points}</div>
+                    <div className="text-sm opacity-90">pontos</div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                
+                <div className="flex items-center mt-4 space-x-4">
+                  <Badge variant="secondary" className={`${getTypeColor(dayContent?.mainFocus || '')}`}>
+                    {dayContent?.mainFocus}
+                  </Badge>
+                  <div className="flex items-center text-sm opacity-90">
+                    <Clock className="w-4 h-4 mr-1" />
+                    {dayContent?.estimatedTime} min
+                  </div>
+                  <Badge variant="secondary">
+                    Dificuldade: {dayContent?.difficulty === 'easy' ? 'Fácil' : dayContent?.difficulty === 'medium' ? 'Médio' : 'Difícil'}
+                  </Badge>
+                </div>
+              </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between items-center">
-          <Button
-            onClick={() => onNavigate(Math.max(1, dayNumber - 1))}
-            variant="outline"
-            disabled={dayNumber <= 1}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Dia {dayNumber - 1}
-          </Button>
+              {/* Activities List */}
+              <CardContent className="p-8">
+                <h3 className="text-lg font-semibold mb-6">Atividades de Hoje</h3>
+                
+                {!dayContent?.activities || dayContent.activities.length === 0 ? (
+                  <div className="text-center py-8">
+                    <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Nenhuma atividade disponível para este dia.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {dayContent.activities.map((activity, index) => (
+                      <div 
+                        key={activity.id}
+                        className={`border-2 rounded-xl p-6 transition-all ${
+                          activity.completed 
+                            ? 'border-green-200 bg-green-50' 
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <div className={`p-2 rounded-lg ${
+                              activity.completed ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {getActivityIcon(activity.type)}
+                            </div>
+                            
+                            <div>
+                              <h4 className="font-semibold text-gray-900">{activity.title}</h4>
+                              {activity.description && (
+                                <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
+                              )}
+                              <div className="flex items-center text-sm text-gray-600 mt-2">
+                                <Clock className="w-4 h-4 mr-1" />
+                                {activity.duration} min
+                                {activity.isRequired && (
+                                  <Badge variant="outline" className="ml-2">
+                                    Obrigatório
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-3">
+                            {activity.completed ? (
+                              <div className="flex items-center text-green-600 font-medium">
+                                <CheckCircle className="w-5 h-5 mr-1" />
+                                Completo
+                              </div>
+                            ) : (
+                              <Button 
+                                onClick={() => completeActivity(activity.id, index)}
+                                size="sm"
+                              >
+                                Começar
+                              </Button>
+                            )}
+                          </div>
+                        </div>
 
-          {requiredActivitiesCompleted && dayNumber < maxDays && (
-            <Button
-              onClick={() => onNavigate(dayNumber + 1)}
-              className="bg-primary hover:bg-primary/90"
-            >
-              Continuar para Dia {dayNumber + 1}
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          )}
+                        {activity.instructions && activity.instructions.length > 0 && (
+                          <div className="mt-4 pt-4 border-t">
+                            <h5 className="text-sm font-medium text-gray-700 mb-2">Instruções:</h5>
+                            <ol className="list-decimal list-inside space-y-1">
+                              {activity.instructions.map((instruction, idx) => (
+                                <li key={idx} className="text-sm text-gray-600">{instruction}</li>
+                              ))}
+                            </ol>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-          {dayNumber === maxDays && isCompleted && (
-            <Button
-              onClick={onComplete}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Award className="w-4 h-4 mr-2" />
-              Concluir Trilha
-            </Button>
-          )}
+                {/* Day Completion */}
+                {dayContent && (
+                  <div className="mt-8 p-6 bg-gray-50 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">
+                          Completar Dia {selectedDay}
+                        </h4>
+                        <p className="text-gray-600">
+                          Finalize todas as atividades obrigatórias para ganhar {dayContent.rewards.points} pontos
+                        </p>
+                      </div>
+                      
+                      <Button
+                        onClick={completeDayProgress}
+                        disabled={!dayContent.activities.filter(a => a.isRequired).every(a => a.completed)}
+                        className={`${
+                          dayContent.activities.filter(a => a.isRequired).every(a => a.completed)
+                            ? 'bg-green-600 hover:bg-green-700'
+                            : ''
+                        }`}
+                      >
+                        {userProgress.completedDays.includes(selectedDay) ? (
+                          <>
+                            <CheckCircle className="w-5 h-5 mr-2" />
+                            Completo
+                          </>
+                        ) : (
+                          <>
+                            Finalizar Dia
+                            <ChevronRight className="w-5 h-5 ml-2" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
