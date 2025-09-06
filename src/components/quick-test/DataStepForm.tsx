@@ -29,6 +29,27 @@ const DataStepForm: React.FC<DataStepFormProps> = ({
   onSubmit,
   isSubmitting
 }) => {
+  // Handlers específicos para evitar re-renders
+  const handleNameChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onInputChange('fullName', e.target.value);
+  }, [onInputChange]);
+
+  const handleWhatsappChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onInputChange('whatsapp', e.target.value);
+  }, [onInputChange]);
+
+  const handleAgeChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onInputChange('age', e.target.value);
+  }, [onInputChange]);
+
+  const handleCityChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onInputChange('city', e.target.value);
+  }, [onInputChange]);
+
+  const handleContactChange = React.useCallback((checked: boolean) => {
+    onInputChange('acceptContact', checked);
+  }, [onInputChange]);
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <Card>
@@ -45,7 +66,7 @@ const DataStepForm: React.FC<DataStepFormProps> = ({
               id="fullName"
               type="text"
               value={personalData.fullName}
-              onChange={(e) => onInputChange('fullName', e.target.value)}
+              onChange={handleNameChange}
               placeholder="Digite seu nome completo"
               className="w-full"
               autoComplete="name"
@@ -58,7 +79,7 @@ const DataStepForm: React.FC<DataStepFormProps> = ({
               id="whatsapp"
               type="tel"
               value={personalData.whatsapp}
-              onChange={(e) => onInputChange('whatsapp', e.target.value)}
+              onChange={handleWhatsappChange}
               placeholder="(11) 99999-9999"
               className="w-full"
               autoComplete="tel"
@@ -72,7 +93,7 @@ const DataStepForm: React.FC<DataStepFormProps> = ({
                 id="age"
                 type="number"
                 value={personalData.age}
-                onChange={(e) => onInputChange('age', e.target.value)}
+                onChange={handleAgeChange}
                 placeholder="Sua idade"
                 autoComplete="age"
               />
@@ -84,7 +105,7 @@ const DataStepForm: React.FC<DataStepFormProps> = ({
                 id="city"
                 type="text"
                 value={personalData.city}
-                onChange={(e) => onInputChange('city', e.target.value)}
+                onChange={handleCityChange}
                 placeholder="Sua cidade"
                 autoComplete="address-level2"
               />
@@ -95,7 +116,7 @@ const DataStepForm: React.FC<DataStepFormProps> = ({
             <Checkbox
               id="acceptContact"
               checked={personalData.acceptContact}
-              onCheckedChange={(checked) => onInputChange('acceptContact', checked as boolean)}
+              onCheckedChange={handleContactChange}
             />
             <Label htmlFor="acceptContact" className="text-sm">
               Aceito receber contato posterior sobre o programa completo
