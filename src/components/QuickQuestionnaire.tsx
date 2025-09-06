@@ -360,7 +360,7 @@ const QuickQuestionnaire = () => {
     );
   };
 
-  const DataStep = () => (
+  const DataStepMemo = React.useMemo(() => (
     <DataStepForm
       personalData={personalData}
       onInputChange={handleInputChange}
@@ -368,7 +368,9 @@ const QuickQuestionnaire = () => {
       onSubmit={handleSubmit}
       isSubmitting={isSubmitting}
     />
-  );
+  ), [personalData, handleInputChange, isSubmitting]);
+
+  const DataStep = () => DataStepMemo;
 
   const ResultStep = () => {
     if (!results) return null;
