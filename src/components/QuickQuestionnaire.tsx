@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Smartphone, Users, Heart, Church, ArrowRight, ArrowLeft } from "lucide-react";
-import DataStepForm from "./quick-test/DataStepForm";
 
 interface Answer {
   questionIndex: number;
@@ -38,9 +40,6 @@ const QuickQuestionnaire = () => {
   const [results, setResults] = useState<any>(null);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
 
-  const handleInputChange = React.useCallback((field: keyof PersonalData, value: string | boolean) => {
-    setPersonalData(prev => ({ ...prev, [field]: value }));
-  }, []);
 
   // 4 perguntas estratégicas - uma de cada categoria
   const questions = [
@@ -360,17 +359,101 @@ const QuickQuestionnaire = () => {
     );
   };
 
-  const DataStepMemo = React.useMemo(() => (
-    <DataStepForm
-      personalData={personalData}
-      onInputChange={handleInputChange}
-      onBack={() => setCurrentStep('questions')}
-      onSubmit={handleSubmit}
-      isSubmitting={isSubmitting}
-    />
-  ), [personalData, handleInputChange, isSubmitting]);
+  const DataStep = () => (
+    <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <Card>
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl mb-2">Seus Dados</CardTitle>
+          <p className="text-muted-foreground">
+            Para gerar seu resultado e permitir o acompanhamento
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="fullName">Nome Completo *</Label>
+            <Input
+              id="fullName"
+              type="text"
+              value={personalData.fullName}
+              onChange={(e) => setPersonalData(prev => ({ ...prev, fullName: e.target.value }))}
+              placeholder="Digite seu nome completo"
+              className="w-full"
+              autoComplete="name"
+            />
+          </div>
 
-  const DataStep = () => DataStepMemo;
+          <div className="space-y-2">
+            <Label htmlFor="whatsapp">WhatsApp *</Label>
+            <Input
+              id="whatsapp"
+              type="tel"
+              value={personalData.whatsapp}
+              onChange={(e) => setPersonalData(prev => ({ ...prev, whatsapp: e.target.value }))}
+              placeholder="(11) 99999-9999"
+              className="w-full"
+              autoComplete="tel"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="age">Idade</Label>
+              <Input
+                id="age"
+                type="number"
+                value={personalData.age}
+                onChange={(e) => setPersonalData(prev => ({ ...prev, age: e.target.value }))}
+                placeholder="Sua idade"
+                autoComplete="age"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="city">Cidade</Label>
+              <Input
+                id="city"
+                type="text"
+                value={personalData.city}
+                onChange={(e) => setPersonalData(prev => ({ ...prev, city: e.target.value }))}
+                placeholder="Sua cidade"
+                autoComplete="address-level2"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="acceptContact"
+              checked={personalData.acceptContact}
+              onCheckedChange={(checked) => setPersonalData(prev => ({ ...prev, acceptContact: !!checked }))}
+            />
+            <Label htmlFor="acceptContact" className="text-sm">
+              Aceito receber contato posterior sobre o programa completo
+            </Label>
+          </div>
+
+          <div className="flex gap-4 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentStep('questions')}
+              disabled={isSubmitting}
+            >
+              <ArrowLeft className="mr-2 w-4 h-4" />
+              Voltar
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="flex-1"
+            >
+              {isSubmitting ? "Processando..." : "Ver Resultado"}
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   const ResultStep = () => {
     if (!results) return null;
