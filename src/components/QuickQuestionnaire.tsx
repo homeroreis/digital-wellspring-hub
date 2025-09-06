@@ -259,66 +259,101 @@ const QuickQuestionnaire = () => {
     const progress = ((currentQuestion + 1) / questions.length) * 100;
 
     return (
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-sm font-medium text-muted-foreground">
-              Pergunta {currentQuestion + 1} de {questions.length}
-            </span>
-            <span className="text-sm font-medium text-primary">
-              {Math.round(progress)}% concluído
-            </span>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+          {/* Progress Header */}
+          <div className="mb-8 sm:mb-12">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary">{currentQuestion + 1}</span>
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">
+                  de {questions.length} perguntas
+                </span>
+              </div>
+              <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-full">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <span className="text-sm font-medium text-primary">
+                  {Math.round(progress)}% concluído
+                </span>
+              </div>
+            </div>
+            
+            <div className="relative">
+              <div className="w-full bg-muted/60 rounded-full h-2 overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-primary via-primary-glow to-primary h-2 rounded-full transition-all duration-700 ease-out shadow-sm"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full animate-pulse" />
+            </div>
           </div>
-          <div className="w-full bg-muted rounded-full h-2">
-            <div 
-              className="bg-gradient-to-r from-primary to-primary-glow h-2 rounded-full transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
 
-        <Card className="mb-8">
-          <CardHeader className="text-center">
-            <div className={`bg-gradient-to-r ${question.color} rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center`}>
-              <IconComponent className="w-8 h-8 text-white" />
-            </div>
-            <div className="text-sm font-medium text-muted-foreground mb-2">
-              {question.category}
-            </div>
-            <CardTitle className="text-xl">
-              {question.question}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {frequencyOptions.map((option) => (
-                <Button
-                  key={option.value}
-                  variant="outline"
-                  className="w-full text-left justify-start hover:border-primary hover:bg-primary/5 transition-all"
-                  onClick={() => handleAnswerSelect(option.value)}
-                >
-                  <div className="flex flex-col items-start">
-                    <div className="font-medium">{option.label}</div>
-                    <div className="text-sm text-muted-foreground">{option.description}</div>
+          {/* Question Card */}
+          <div className="mb-8 sm:mb-12 animate-in slide-in-from-bottom-4 duration-500">
+            <Card className="border-0 shadow-elevated bg-card/80 backdrop-blur-sm">
+              <CardHeader className="text-center pb-8 pt-8 sm:pt-12">
+                <div className={`bg-gradient-to-r ${question.color} rounded-2xl p-5 w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-6 flex items-center justify-center shadow-soft transition-transform hover:scale-105`}>
+                  <IconComponent className="w-9 h-9 sm:w-12 sm:h-12 text-white" />
+                </div>
+                <div className="space-y-3">
+                  <div className="inline-block bg-muted/80 px-4 py-2 rounded-full">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {question.category}
+                    </span>
                   </div>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {currentQuestion > 0 && (
-          <div className="text-center">
-            <Button
-              variant="ghost"
-              onClick={() => setCurrentQuestion(currentQuestion - 1)}
-            >
-              <ArrowLeft className="mr-2 w-4 h-4" />
-              Pergunta Anterior
-            </Button>
+                  <CardTitle className="text-xl sm:text-2xl lg:text-3xl leading-tight px-4 sm:px-8">
+                    {question.question}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="px-6 sm:px-8 pb-8 sm:pb-12">
+                <div className="space-y-3 sm:space-y-4 max-w-2xl mx-auto">
+                  {frequencyOptions.map((option, index) => (
+                    <Button
+                      key={option.value}
+                      variant="outline"
+                      className="w-full text-left justify-start p-4 sm:p-6 h-auto border-2 hover:border-primary hover:bg-primary/5 hover:shadow-soft transition-all duration-300 group animate-in slide-in-from-left-2"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                      onClick={() => handleAnswerSelect(option.value)}
+                    >
+                      <div className="flex items-start gap-4 w-full">
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-muted-foreground/30 group-hover:border-primary transition-colors flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-transparent group-hover:bg-primary transition-colors" />
+                        </div>
+                        <div className="flex flex-col items-start gap-1 flex-1 min-w-0">
+                          <div className="font-semibold text-base sm:text-lg group-hover:text-primary transition-colors">
+                            {option.label}
+                          </div>
+                          <div className="text-sm text-muted-foreground group-hover:text-primary/70 transition-colors leading-relaxed">
+                            {option.description}
+                          </div>
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        )}
+
+          {/* Navigation */}
+          {currentQuestion > 0 && (
+            <div className="text-center animate-in slide-in-from-bottom-2 duration-300">
+              <Button
+                variant="ghost"
+                onClick={() => setCurrentQuestion(currentQuestion - 1)}
+                className="hover:bg-muted/60 transition-colors"
+              >
+                <ArrowLeft className="mr-2 w-4 h-4" />
+                Pergunta Anterior
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     );
   };
