@@ -242,11 +242,12 @@ const QuickQuestionnaire = () => {
             setCurrentStep('questions');
             setQuestionStartTime(Date.now());
           }}
+          variant="elevated"
           size="lg"
-          className="px-8 py-3"
+          className="px-12 py-4 text-lg font-semibold"
         >
           Iniciar Teste Rápido
-          <ArrowRight className="ml-2 w-5 h-5" />
+          <ArrowRight className="ml-2 w-6 h-6" />
         </Button>
       </div>
     </div>
@@ -341,7 +342,7 @@ const QuickQuestionnaire = () => {
               <Label htmlFor="fullName">Nome Completo *</Label>
               <Input
                 id="fullName"
-                defaultValue={personalData.fullName}
+                value={personalData.fullName}
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
                 placeholder="Digite seu nome completo"
                 className="w-full"
@@ -352,7 +353,7 @@ const QuickQuestionnaire = () => {
               <Label htmlFor="whatsapp">WhatsApp *</Label>
               <Input
                 id="whatsapp"
-                defaultValue={personalData.whatsapp}
+                value={personalData.whatsapp}
                 onChange={(e) => handleInputChange('whatsapp', e.target.value)}
                 placeholder="(11) 99999-9999"
                 className="w-full"
@@ -365,7 +366,7 @@ const QuickQuestionnaire = () => {
                 <Input
                   id="age"
                   type="number"
-                  defaultValue={personalData.age}
+                  value={personalData.age}
                   onChange={(e) => handleInputChange('age', e.target.value)}
                   placeholder="Sua idade"
                 />
@@ -375,7 +376,7 @@ const QuickQuestionnaire = () => {
                 <Label htmlFor="city">Cidade</Label>
                 <Input
                   id="city"
-                  defaultValue={personalData.city}
+                  value={personalData.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
                   placeholder="Sua cidade"
                 />
