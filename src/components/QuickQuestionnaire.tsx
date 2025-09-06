@@ -40,6 +40,10 @@ const QuickQuestionnaire = () => {
   const [results, setResults] = useState<any>(null);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
 
+  const handleInputChange = React.useCallback((field: keyof PersonalData, value: string | boolean) => {
+    setPersonalData(prev => ({ ...prev, [field]: value }));
+  }, []);
+
   // 4 perguntas estratégicas - uma de cada categoria
   const questions = [
     {
@@ -358,11 +362,7 @@ const QuickQuestionnaire = () => {
     );
   };
 
-  const DataStep = () => {
-    const handleInputChange = React.useCallback((field: keyof PersonalData, value: string | boolean) => {
-      setPersonalData(prev => ({ ...prev, [field]: value }));
-    }, []);
-
+  const DataStep = React.useMemo(() => () => {
     return (
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <Card>
@@ -451,7 +451,7 @@ const QuickQuestionnaire = () => {
         </Card>
       </div>
     );
-  };
+  }, [personalData, isSubmitting, handleInputChange]);
 
   const ResultStep = () => {
     if (!results) return null;
