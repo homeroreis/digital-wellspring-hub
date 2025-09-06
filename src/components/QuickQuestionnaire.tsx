@@ -359,9 +359,9 @@ const QuickQuestionnaire = () => {
   };
 
   const DataStep = () => {
-    const handleInputChange = (field: keyof PersonalData, value: string | boolean) => {
+    const handleInputChange = React.useCallback((field: keyof PersonalData, value: string | boolean) => {
       setPersonalData(prev => ({ ...prev, [field]: value }));
-    };
+    }, []);
 
     return (
       <div className="container mx-auto px-4 py-8 max-w-2xl">
