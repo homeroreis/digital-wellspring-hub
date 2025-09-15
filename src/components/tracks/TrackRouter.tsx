@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { PersonalizationService } from '@/services/personalizationEngine';
-import DayViewManager from './DayViewManager';
+import RealDayViewManager from './RealDayViewManager';
 import LiberdadeOnboarding from './liberdade/LiberdadeOnboarding';
 import EquilibrioOnboarding from './equilibrio/EquilibrioOnboarding';
 import RenovacaoOnboarding from './renovacao/RenovacaoOnboarding';
@@ -175,7 +175,7 @@ const TrackRouter: React.FC<TrackRouterProps> = ({ userId, trackSlug, userScore 
 
   // Se completou onboarding, mostra a trilha personalizada
   return (
-    <DayViewManager 
+    <RealDayViewManager 
       userId={userId}
       trackSlug={trackSlug}
       userScore={userScore}

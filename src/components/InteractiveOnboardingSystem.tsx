@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { programTracks } from '@/data/programs';
+import { AudioPlayer } from '@/components/ui/audio-player';
 
 interface OnboardingProps {
   trackSlug: string;

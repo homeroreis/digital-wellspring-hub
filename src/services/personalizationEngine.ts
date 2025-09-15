@@ -1,3 +1,5 @@
+import { supabase } from '@/integrations/supabase/client';
+
 export interface UserProfile {
   id: string;
   testResults: {
@@ -28,6 +30,7 @@ export interface UserProfile {
     occupation?: string;
     location?: string;
     churchAffiliation?: string;
+    fullName?: string;
   };
 }
 
@@ -57,6 +60,12 @@ export interface PersonalizedContent {
   rewards: {
     points: number;
     achievement?: string;
+  };
+  devotionalContent?: {
+    verse: string;
+    reflection: string;
+    prayer: string;
+    audioUrl?: string;
   };
 }
 
@@ -89,81 +98,138 @@ export class PersonalizationService {
   }
 
   /**
-   * Busca perfil do usuário
+   * Busca perfil do usuário REAL do Supabase
    */
   private static async getUserProfile(userId: string): Promise<UserProfile | null> {
-    // TODO: Implementar busca no Supabase
-    // Por enquanto, retorna dados mock
-    return {
-      id: userId,
-      testResults: {
-        totalScore: 45,
-        categoryScores: {
-          comportamento: 12,
-          vida_cotidiana: 15,
-          relacoes: 8,
-          espiritual: 10
-        },
-        trackType: 'renovacao',
-        date: new Date().toISOString()
-      },
-      progressData: {
-        currentDay: 1,
-        currentTrack: 'renovacao',
-        completedActivities: [],
-        streak: 0,
-        totalPoints: 0
-      },
-      preferences: {
-        focusAreas: ['vida_cotidiana'],
-        availableTime: 30,
-        difficulty: 'medium'
-      },
-      personalData: {
-        age: 30,
-        occupation: 'Profissional'
+    try {
+      // Buscar dados do questionário
+      const { data: questionnaireData } = await supabase
+        .from('questionnaire_results')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      // Buscar progresso da trilha
+      const { data: progressData } = await supabase
+        .from('user_track_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .limit(1)
+        .single();
+
+      // Buscar preferências
+      const { data: preferencesData } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', userId)
+        .limit(1)
+        .single();
+
+      // Buscar perfil
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .limit(1)
+        .single();
+
+      if (!questionnaireData) {
+        console.warn('Dados do questionário não encontrados para usuário:', userId);
+        return null;
       }
-    };
+
+      return {
+        id: userId,
+        testResults: {
+          totalScore: questionnaireData.total_score,
+          categoryScores: {
+            comportamento: questionnaireData.comportamento_score,
+            vida_cotidiana: questionnaireData.vida_cotidiana_score,
+            relacoes: questionnaireData.relacoes_score,
+            espiritual: questionnaireData.espiritual_score
+          },
+          trackType: questionnaireData.track_type,
+          date: questionnaireData.created_at
+        },
+        progressData: {
+          currentDay: progressData?.current_day || 1,
+          currentTrack: progressData?.track_slug || questionnaireData.track_type,
+          completedActivities: [],
+          streak: progressData?.streak_days || 0,
+          totalPoints: progressData?.total_points || 0
+        },
+        preferences: {
+          focusAreas: preferencesData?.focus_areas || [],
+          availableTime: 30,
+          difficulty: 'medium'
+        },
+        personalData: {
+          age: questionnaireData.age,
+          occupation: questionnaireData.profession,
+          location: questionnaireData.city,
+          fullName: questionnaireData.full_name || profileData?.full_name
+        }
+      };
+    } catch (error) {
+      console.error('Erro ao buscar perfil do usuário:', error);
+      return null;
+    }
   }
 
   /**
-   * Busca conteúdo base para um dia específico
+   * Busca conteúdo base REAL do Supabase
    */
   private static async getBaseContent(trackType: string, dayNumber: number) {
     try {
-      // TODO: Implementar busca no Supabase
-      // Por enquanto, retorna estrutura base
+      // Buscar conteúdo diário
+      const { data: dailyContent } = await supabase
+        .from('track_daily_content')
+        .select('*')
+        .eq('track_slug', trackType)
+        .eq('day_number', dayNumber)
+        .single();
+
+      if (!dailyContent) {
+        console.warn(`Conteúdo não encontrado para ${trackType} dia ${dayNumber}`);
+        return this.getDefaultContent(trackType, dayNumber);
+      }
+
+      // Buscar atividades do dia
+      const { data: activities } = await supabase
+        .from('track_daily_activities')
+        .select('*')
+        .eq('daily_content_id', dailyContent.id)
+        .order('sort_order');
+
       return {
-        title: `Dia ${dayNumber}`,
-        subtitle: 'Sua jornada de transformação',
-        description: 'Conteúdo personalizado para seu crescimento',
-        activities: [
-          {
-            type: 'reflection',
-            title: 'Reflexão Diária',
-            description: 'Momento de autoavaliação',
-            duration: 10,
-            baseDifficulty: 1,
-            points: 10,
-            isRequired: true,
-            instructions: ['Encontre um local tranquilo', 'Reflita sobre o dia']
-          },
-          {
-            type: 'exercise',
-            title: 'Exercício Prático',
-            description: 'Atividade para aplicar o aprendizado',
-            duration: 20,
-            baseDifficulty: 2,
-            points: 20,
-            isRequired: true,
-            instructions: ['Prepare os materiais necessários', 'Execute com atenção']
-          }
-        ]
+        title: dailyContent.title,
+        subtitle: dailyContent.objective,
+        description: dailyContent.objective,
+        devotionalContent: {
+          verse: dailyContent.devotional_verse,
+          reflection: dailyContent.devotional_reflection,
+          prayer: dailyContent.devotional_prayer
+        },
+        mainActivity: {
+          title: dailyContent.main_activity_title,
+          content: dailyContent.main_activity_content
+        },
+        mainChallenge: {
+          title: dailyContent.main_challenge_title,
+          content: dailyContent.main_challenge_content
+        },
+        bonusActivity: dailyContent.bonus_activity_title ? {
+          title: dailyContent.bonus_activity_title,
+          content: dailyContent.bonus_activity_content
+        } : null,
+        maxPoints: dailyContent.max_points,
+        difficultyLevel: dailyContent.difficulty_level,
+        activities: activities || []
       };
     } catch (error) {
       console.error(`Erro ao buscar conteúdo base para ${trackType} dia ${dayNumber}:`, error);
-      
-      // Retorna conteúdo padrão se não encontrar
       return this.getDefaultContent(trackType, dayNumber);
     }
   }
@@ -176,7 +242,14 @@ export class PersonalizationService {
       title: `${this.getTrackName(trackType)} - Dia ${dayNumber}`,
       subtitle: 'Sua jornada de crescimento continua',
       description: 'Conteúdo personalizado baseado em seu perfil e necessidades',
-      activities: []
+      devotionalContent: {
+        verse: 'Por isso não tema, pois estou com você; não tenha medo, pois sou o seu Deus.',
+        reflection: 'Hoje é um novo dia para crescer e se transformar.',
+        prayer: 'Senhor, me ajude a ser consciente de minhas escolhas hoje.'
+      },
+      activities: [],
+      maxPoints: 100,
+      difficultyLevel: 1
     };
   }
 
@@ -198,35 +271,12 @@ export class PersonalizationService {
    */
   private static getTrackLength(trackType: string): number {
     const trackLengths: { [key: string]: number } = {
-      'renovacao': 21,
-      'liberdade': 30,
-      'equilibrio': 14
+      'renovacao': 40,
+      'liberdade': 7,
+      'equilibrio': 21
     };
     
     return trackLengths[trackType] || 21;
-  }
-
-  /**
-   * Busca conteúdo do Supabase
-   */
-  private static async fetchContentFromSupabase(trackType: string, dayNumber: number) {
-    try {
-      // TODO: Implementar busca real no Supabase
-      const data = null; // await supabase.from('track_contents').select('*')...
-      
-      if (!data) {
-        // Retorna conteúdo padrão se não encontrar
-        return this.getDefaultContent(trackType, dayNumber);
-      }
-      
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar do Supabase:', error);
-      
-      // Retorna conteúdo padrão se não encontrar
-      return this.getDefaultContent(trackType, dayNumber);
-    }
-    
   }
 
   /**
@@ -250,13 +300,22 @@ export class PersonalizationService {
   }
 
   /**
-   * Completa uma atividade
+   * Completa uma atividade - INTEGRAÇÃO REAL
    */
   static async completeActivity(userId: string, dayNumber: number, activityId: string): Promise<void> {
     try {
-      // TODO: Implementar lógica de completar atividade no Supabase
-      console.log('Completando atividade:', { userId, dayNumber, activityId });
-      return this.updateUserProgress(userId, activityId, true);
+      // Usar RPC do Supabase para completar atividade
+      const { error } = await supabase.rpc('complete_activity', {
+        p_track_slug: (await this.getUserProfile(userId))?.testResults.trackType || 'equilibrio',
+        p_day_number: dayNumber,
+        p_activity_index: parseInt(activityId.split('-').pop() || '0'),
+        p_activity_title: `Atividade ${activityId}`,
+        p_activity_type: 'activity'
+      });
+
+      if (error) throw error;
+      
+      console.log('Atividade completada:', { userId, dayNumber, activityId });
     } catch (error) {
       console.error('Erro ao completar atividade:', error);
       throw error;
@@ -264,12 +323,22 @@ export class PersonalizationService {
   }
 
   /**
-   * Completa um dia
+   * Completa um dia - INTEGRAÇÃO REAL
    */
   static async completeDay(userId: string, dayNumber: number, points: number): Promise<void> {
     try {
-      // TODO: Implementar lógica de completar dia no Supabase
-      console.log('Completando dia:', { userId, dayNumber, points });
+      // Usar RPC do Supabase para completar dia
+      const profile = await this.getUserProfile(userId);
+      if (!profile) throw new Error('Perfil não encontrado');
+
+      const { error } = await supabase.rpc('complete_day', {
+        p_track_slug: profile.testResults.trackType,
+        p_day_number: dayNumber
+      });
+
+      if (error) throw error;
+      
+      console.log('Dia completado:', { userId, dayNumber, points });
     } catch (error) {
       console.error('Erro ao completar dia:', error);
       throw error;
@@ -277,7 +346,7 @@ export class PersonalizationService {
   }
 
   /**
-   * Personaliza o conteúdo baseado no perfil
+   * Personaliza o conteúdo baseado no perfil - INCLUINDO CONTEÚDO ESPIRITUAL
    */
   private static personalizeContent(
     baseContent: any,
@@ -286,7 +355,7 @@ export class PersonalizationService {
   ): PersonalizedContent {
     const userNeeds = this.analyzeUserNeeds(profile);
     const difficulty = this.calculateDifficulty(dayNumber, profile);
-    const activities = this.personalizeActivities(baseContent.activities || [], profile, userNeeds);
+    const activities = this.personalizeActivities(baseContent.activities || [], profile, userNeeds, baseContent, dayNumber);
     
     return {
       dayNumber,
@@ -302,10 +371,122 @@ export class PersonalizationService {
       difficulty,
       estimatedTime: this.calculateEstimatedTime(activities),
       rewards: {
-        points: this.calculatePoints(activities, difficulty),
+        points: baseContent.maxPoints || this.calculatePoints(activities, difficulty),
         achievement: this.checkForAchievement(dayNumber, profile.testResults.trackType)
+      },
+      // SEMPRE incluir conteúdo espiritual (base de todas as trilhas)
+      devotionalContent: {
+        verse: baseContent.devotionalContent?.verse || 'Não tenhas medo, eu estarei contigo.',
+        reflection: this.personalizeText(
+          baseContent.devotionalContent?.reflection || 'Momento de reflexão sobre nossa jornada.',
+          profile
+        ),
+        prayer: this.personalizeText(
+          baseContent.devotionalContent?.prayer || 'Senhor, me ajude a crescer hoje.',
+          profile
+        ),
+        audioUrl: baseContent.devotionalContent?.audioUrl
       }
     };
+  }
+
+  /**
+   * Personaliza atividades incluindo devotional como base
+   */
+  private static personalizeActivities(
+    baseActivities: any[],
+    profile: UserProfile,
+    userNeeds: any,
+    baseContent: any,
+    dayNumber: number
+  ): Activity[] {
+    const activities: Activity[] = [];
+
+    // 1. SEMPRE incluir atividade devocional/espiritual (base comum)
+    activities.push({
+      id: `devotional-${profile.testResults.trackType}-day${dayNumber}`,
+      type: 'devotional',
+      title: 'Momento Devocional',
+      description: 'Comece o dia com reflexão espiritual',
+      duration: 10,
+      contentUrl: baseContent.devotionalContent?.audioUrl,
+      instructions: [
+        'Encontre um local tranquilo',
+        'Leia o versículo do dia',
+        'Reflita sobre a mensagem',
+        'Faça uma oração pessoal'
+      ],
+      difficulty: 1,
+      points: 15,
+      isRequired: true,
+      completed: false
+    });
+
+    // 2. Atividade principal do track
+    if (baseContent.mainActivity) {
+      activities.push({
+        id: `main-${profile.testResults.trackType}-day${dayNumber}`,
+        type: 'exercise',
+        title: baseContent.mainActivity.title,
+        description: baseContent.mainActivity.content,
+        duration: 20,
+        instructions: ['Execute com atenção', 'Mantenha o foco'],
+        difficulty: baseContent.difficultyLevel || 2,
+        points: 25,
+        isRequired: true,
+        completed: false
+      });
+    }
+
+    // 3. Desafio do dia
+    if (baseContent.mainChallenge) {
+      activities.push({
+        id: `challenge-${profile.testResults.trackType}-day${dayNumber}`,
+        type: 'challenge',
+        title: baseContent.mainChallenge.title,
+        description: baseContent.mainChallenge.content,
+        duration: 15,
+        instructions: ['Aceite o desafio', 'Pratique durante o dia'],
+        difficulty: baseContent.difficultyLevel || 2,
+        points: 30,
+        isRequired: true,
+        completed: false
+      });
+    }
+
+    // 4. Atividade bônus (opcional)
+    if (baseContent.bonusActivity) {
+      activities.push({
+        id: `bonus-${profile.testResults.trackType}-day${dayNumber}`,
+        type: 'bonus',
+        title: baseContent.bonusActivity.title,
+        description: baseContent.bonusActivity.content,
+        duration: 10,
+        instructions: ['Atividade opcional para aprofundar o aprendizado'],
+        difficulty: 1,
+        points: 10,
+        isRequired: false,
+        completed: false
+      });
+    }
+
+    // 5. Adicionar atividades do banco se existirem
+    baseActivities.forEach((activity, index) => {
+      activities.push({
+        id: `db-activity-${index}`,
+        type: 'exercise',
+        title: activity.activity_title,
+        description: activity.activity_description,
+        duration: 15,
+        instructions: ['Siga as instruções'],
+        difficulty: 2,
+        points: activity.points_value,
+        isRequired: activity.is_required,
+        completed: false
+      });
+    });
+
+    return activities;
   }
 
   /**
@@ -355,72 +536,13 @@ export class PersonalizationService {
   }
 
   /**
-   * Personaliza atividades
-   */
-  private static personalizeActivities(
-    baseActivities: any[],
-    profile: UserProfile,
-    userNeeds: any
-  ): Activity[] {
-    const focusAreas = profile.preferences.focusAreas || [];
-    const totalScore = profile.testResults.totalScore;
-    const primaryIssue = userNeeds.primaryIssue as string;
-
-    const areaActivityMap: Record<string, string[]> = {
-      comportamento: ['challenge', 'exercise'],
-      vida_cotidiana: ['exercise', 'reflection'],
-      relacoes: ['reflection', 'challenge'],
-      espiritual: ['prayer', 'meditation'],
-      produtividade: ['exercise', 'challenge', 'reflection'],
-      relacionamentos: ['reflection', 'challenge'],
-      espiritualidade: ['prayer', 'meditation']
-    };
-
-    const targetAreas = new Set<string>([primaryIssue, ...focusAreas]);
-    const allowedTypes = new Set<string>();
-    targetAreas.forEach(area => {
-      const types = areaActivityMap[area];
-      if (types) types.forEach(t => allowedTypes.add(t));
-    });
-
-    const requiredActivities = baseActivities.filter(a => a.isRequired !== false);
-    let optionalActivities = baseActivities.filter(a => a.isRequired === false);
-
-    if (allowedTypes.size > 0) {
-      optionalActivities = optionalActivities.filter(a => allowedTypes.has(a.type));
-    }
-
-    const maxOptional = Math.min(
-      optionalActivities.length,
-      Math.floor(totalScore / 50)
-    );
-    optionalActivities = optionalActivities.slice(0, maxOptional);
-
-    const selected = [...requiredActivities, ...optionalActivities];
-
-    return selected.map((activity, index) => ({
-      id: `activity-${profile.testResults.trackType}-day${profile.progressData.currentDay}-${index}`,
-      type: activity.type || 'exercise',
-      title: this.personalizeText(activity.title || 'Atividade', profile),
-      description: activity.description || '',
-      duration: activity.duration || 15,
-      contentUrl: activity.contentUrl,
-      instructions: activity.instructions || [],
-      difficulty: activity.baseDifficulty || 1,
-      points: activity.points || 10,
-      isRequired: activity.isRequired !== false,
-      completed: false
-    }));
-  }
-
-  /**
    * Personaliza texto substituindo variáveis
    */
   private static personalizeText(text: string, profile: UserProfile): string {
     if (!text) return '';
     
     const replacements: { [key: string]: string } = {
-      '{{user_name}}': 'amigo',
+      '{{user_name}}': profile.personalData.fullName || 'amigo',
       '{{track_name}}': this.getTrackName(profile.testResults.trackType),
       '{{total_score}}': profile.testResults.totalScore.toString(),
       '{{current_day}}': profile.progressData.currentDay.toString(),
@@ -469,10 +591,7 @@ export class PersonalizationService {
   /**
    * Calcula pontos totais
    */
-  private static calculatePoints(
-    activities: Activity[],
-    difficulty: string
-  ): number {
+  private static calculatePoints(activities: Activity[], difficulty: string): number {
     const multiplier = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 1.5 : 2;
     return Math.round(
       activities.reduce((total, activity) => total + activity.points, 0) * multiplier
@@ -488,43 +607,10 @@ export class PersonalizationService {
       7: 'Uma Semana de Dedicação',
       14: 'Duas Semanas de Crescimento',
       21: 'Três Semanas de Transformação',
-      30: 'Um Mês de Jornada'
+      30: 'Um Mês de Jornada',
+      40: 'Transformação Completa'
     };
     
     return achievementMilestones[dayNumber as keyof typeof achievementMilestones];
-  }
-
-  /**
-   * Salva conteúdo personalizado
-   */
-  static async savePersonalizedContent(
-    userId: string,
-    dayNumber: number,
-    content: PersonalizedContent
-  ): Promise<void> {
-    try {
-      // TODO: Implementar salvamento no Supabase
-      console.log('Salvando conteúdo personalizado:', { userId, dayNumber, content });
-    } catch (error) {
-      console.error('Erro ao salvar conteúdo personalizado:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Atualiza progresso do usuário
-   */
-  static async updateUserProgress(
-    userId: string,
-    activityId: string,
-    completed: boolean
-  ): Promise<void> {
-    try {
-      // TODO: Implementar atualização no Supabase
-      console.log('Atualizando progresso:', { userId, activityId, completed });
-    } catch (error) {
-      console.error('Erro ao atualizar progresso:', error);
-      throw error;
-    }
   }
 }
