@@ -81,17 +81,25 @@ const Auth = () => {
 
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log(`Tentando login com ${provider}...`);
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}/profile-completion`
         }
       });
-      if (error) throw error;
+      
+      if (error) {
+        console.error(`Erro no login ${provider}:`, error);
+        throw error;
+      }
+      
+      console.log(`Login ${provider} iniciado:`, data);
     } catch (err: any) {
+      console.error(`Erro capturado no login ${provider}:`, err);
       toast({
         title: "Erro no login social",
-        description: err?.message || "Não foi possível fazer login.",
+        description: err?.message || `Não foi possível fazer login com ${provider}. Verifique se o provedor está configurado no Supabase.`,
         variant: "destructive",
       });
     }
