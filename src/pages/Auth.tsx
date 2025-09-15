@@ -56,7 +56,7 @@ const Auth = () => {
         const redirectTo = (location.state as any)?.redirectTo || "/";
         navigate(redirectTo, { replace: true });
       } else {
-        const redirectUrl = `${window.location.origin}/`;
+        const redirectUrl = `http://localhost:8080/`;
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -82,10 +82,10 @@ const Auth = () => {
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     try {
       console.log(`Tentando login com ${provider}...`);
-      const { data, error } = await supabase.auth.signInWithOAuth({
+        const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/profile-completion`
+          redirectTo: `http://localhost:8080/profile-completion`
         }
       });
       
@@ -118,7 +118,7 @@ const Auth = () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: `http://localhost:8080/auth`,
       });
 
       if (error) throw error;
