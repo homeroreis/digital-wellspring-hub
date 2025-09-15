@@ -4,10 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Smartphone, Users, Heart, Church, ArrowRight, ArrowLeft } from "lucide-react";
+import { Smartphone, Users, Heart, Church, ArrowRight, ArrowLeft, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Answer {
   questionIndex: number;
@@ -19,7 +23,7 @@ interface Answer {
 interface PersonalData {
   fullName: string;
   whatsapp: string;
-  age: string;
+  birthDate: Date | undefined;
   city: string;
   acceptContact: boolean;
 }
@@ -98,7 +102,7 @@ const DataStep = ({
   isSubmitting 
 }: {
   personalData: PersonalData;
-  onDataChange: (field: keyof PersonalData, value: string | boolean) => void;
+  onDataChange: (field: keyof PersonalData, value: string | boolean | Date | undefined) => void;
   onBack: () => void;
   onSubmit: () => void;
   isSubmitting: boolean;
@@ -140,15 +144,41 @@ const DataStep = ({
 
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="age">Idade</Label>
-            <Input
-              id="age"
-              type="number"
-              value={personalData.age}
-              onChange={(e) => onDataChange('age', e.target.value)}
-              placeholder="Sua idade"
-              autoComplete="age"
-            />
+            <Label htmlFor="birthDate">Data de Nascimento</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !personalData.birthDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {personalData.birthDate ? (
+                    format(personalData.birthDate, "dd/MM/yyyy")
+                  ) : (
+                    <span>Selecione sua data de nascimento</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={personalData.birthDate}
+                  onSelect={(date) => onDataChange('birthDate', date)}
+                  disabled={(date) =>
+                    date > new Date() || date < new Date("1920-01-01")
+                  }
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                  defaultMonth={new Date(1990, 0)}
+                  captionLayout="dropdown-buttons"
+                  fromYear={1920}
+                  toYear={new Date().getFullYear()}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">
@@ -206,7 +236,7 @@ const QuickQuestionnaire = () => {
   const [personalData, setPersonalData] = useState<PersonalData>({
     fullName: "",
     whatsapp: "",
-    age: "",
+    birthDate: undefined,
     city: "",
     acceptContact: false
   });
@@ -340,7 +370,7 @@ const QuickQuestionnaire = () => {
           user_id: session?.user?.id || null, // Save user_id if logged in
           full_name: personalData.fullName,
           whatsapp: personalData.whatsapp,
-          age: personalData.age ? parseInt(personalData.age) : null,
+          birth_date: personalData.birthDate || null,
           city: personalData.city || null,
           accept_contact: personalData.acceptContact,
           answers: JSON.parse(JSON.stringify(answers)),
@@ -360,7 +390,7 @@ const QuickQuestionnaire = () => {
     }
   };
 
-  const handleDataChange = (field: keyof PersonalData, value: string | boolean) => {
+  const handleDataChange = (field: keyof PersonalData, value: string | boolean | Date | undefined) => {
     setPersonalData(prev => ({ ...prev, [field]: value }));
   };
 
