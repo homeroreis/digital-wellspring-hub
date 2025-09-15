@@ -673,6 +673,7 @@ export type Database = {
           id: string
           missionary_id: string | null
           recommended_track: string
+          state: string | null
           total_score: number
           user_id: string | null
           whatsapp: string
@@ -689,6 +690,7 @@ export type Database = {
           id?: string
           missionary_id?: string | null
           recommended_track: string
+          state?: string | null
           total_score: number
           user_id?: string | null
           whatsapp: string
@@ -705,6 +707,7 @@ export type Database = {
           id?: string
           missionary_id?: string | null
           recommended_track?: string
+          state?: string | null
           total_score?: number
           user_id?: string | null
           whatsapp?: string

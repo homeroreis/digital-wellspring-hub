@@ -68,7 +68,7 @@ const AdminUsers = () => {
         email: 'user@example.com', // In production, this would come from auth metadata
         created_at: user.created_at,
         last_sign_in_at: user.created_at,
-        role: rolesData?.find(r => r.user_id === user.user_id)?.role || 'viewer',
+        role: (rolesData?.find(r => r.user_id === user.user_id)?.role as 'admin' | 'editor' | 'viewer') || 'viewer',
         profile: {
           full_name: user.full_name,
           phone: user.phone

@@ -6,11 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Smartphone, Users, Heart, Church, ArrowRight, ArrowLeft, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 interface Answer {
@@ -25,6 +27,7 @@ interface PersonalData {
   whatsapp: string;
   birthDate: Date | undefined;
   city: string;
+  state: string;
   acceptContact: boolean;
 }
 
@@ -115,34 +118,33 @@ const DataStep = ({
           Para gerar seu resultado e permitir o acompanhamento
         </p>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="fullName">Nome Completo *</Label>
-          <Input
-            id="fullName"
-            type="text"
-            value={personalData.fullName}
-            onChange={(e) => onDataChange('fullName', e.target.value)}
-            placeholder="Digite seu nome completo"
-            className="w-full"
-            autoComplete="name"
-          />
-        </div>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="fullName">Nome Completo *</Label>
+            <Input
+              id="fullName"
+              type="text"
+              value={personalData.fullName}
+              onChange={(e) => onDataChange('fullName', e.target.value)}
+              placeholder="Digite seu nome completo"
+              className="w-full"
+              autoComplete="name"
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="whatsapp">WhatsApp *</Label>
-          <Input
-            id="whatsapp"
-            type="tel"
-            value={personalData.whatsapp}
-            onChange={(e) => onDataChange('whatsapp', e.target.value)}
-            placeholder="(11) 99999-9999"
-            className="w-full"
-            autoComplete="tel"
-          />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="whatsapp">WhatsApp *</Label>
+            <Input
+              id="whatsapp"
+              type="tel"
+              value={personalData.whatsapp}
+              onChange={(e) => onDataChange('whatsapp', e.target.value)}
+              placeholder="(11) 99999-9999"
+              className="w-full"
+              autoComplete="tel"
+            />
+          </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="birthDate">Data de Nascimento</Label>
             <Popover>
@@ -156,7 +158,7 @@ const DataStep = ({
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {personalData.birthDate ? (
-                    format(personalData.birthDate, "dd/MM/yyyy")
+                    format(personalData.birthDate, "dd/MM/yyyy", { locale: ptBR })
                   ) : (
                     <span>Selecione sua data de nascimento</span>
                   )}
@@ -176,23 +178,63 @@ const DataStep = ({
                   captionLayout="dropdown-buttons"
                   fromYear={1920}
                   toYear={new Date().getFullYear()}
+                  locale={ptBR}
                 />
               </PopoverContent>
             </Popover>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="city">Cidade</Label>
-            <Input
-              id="city"
-              type="text"
-              value={personalData.city}
-              onChange={(e) => onDataChange('city', e.target.value)}
-              placeholder="Sua cidade"
-              autoComplete="address-level2"
-            />
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="city">Cidade</Label>
+              <Input
+                id="city"
+                type="text"
+                value={personalData.city}
+                onChange={(e) => onDataChange('city', e.target.value)}
+                placeholder="Sua cidade"
+                autoComplete="address-level2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="state">Estado (UF)</Label>
+              <Select value={personalData.state} onValueChange={(value) => onDataChange('state', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="AC">Acre (AC)</SelectItem>
+                  <SelectItem value="AL">Alagoas (AL)</SelectItem>
+                  <SelectItem value="AP">Amapá (AP)</SelectItem>
+                  <SelectItem value="AM">Amazonas (AM)</SelectItem>
+                  <SelectItem value="BA">Bahia (BA)</SelectItem>
+                  <SelectItem value="CE">Ceará (CE)</SelectItem>
+                  <SelectItem value="DF">Distrito Federal (DF)</SelectItem>
+                  <SelectItem value="ES">Espírito Santo (ES)</SelectItem>
+                  <SelectItem value="GO">Goiás (GO)</SelectItem>
+                  <SelectItem value="MA">Maranhão (MA)</SelectItem>
+                  <SelectItem value="MT">Mato Grosso (MT)</SelectItem>
+                  <SelectItem value="MS">Mato Grosso do Sul (MS)</SelectItem>
+                  <SelectItem value="MG">Minas Gerais (MG)</SelectItem>
+                  <SelectItem value="PA">Pará (PA)</SelectItem>
+                  <SelectItem value="PB">Paraíba (PB)</SelectItem>
+                  <SelectItem value="PR">Paraná (PR)</SelectItem>
+                  <SelectItem value="PE">Pernambuco (PE)</SelectItem>
+                  <SelectItem value="PI">Piauí (PI)</SelectItem>
+                  <SelectItem value="RJ">Rio de Janeiro (RJ)</SelectItem>
+                  <SelectItem value="RN">Rio Grande do Norte (RN)</SelectItem>
+                  <SelectItem value="RS">Rio Grande do Sul (RS)</SelectItem>
+                  <SelectItem value="RO">Rondônia (RO)</SelectItem>
+                  <SelectItem value="RR">Roraima (RR)</SelectItem>
+                  <SelectItem value="SC">Santa Catarina (SC)</SelectItem>
+                  <SelectItem value="SP">São Paulo (SP)</SelectItem>
+                  <SelectItem value="SE">Sergipe (SE)</SelectItem>
+                  <SelectItem value="TO">Tocantins (TO)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
 
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -238,6 +280,7 @@ const QuickQuestionnaire = () => {
     whatsapp: "",
     birthDate: undefined,
     city: "",
+    state: "",
     acceptContact: false
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -370,8 +413,9 @@ const QuickQuestionnaire = () => {
           user_id: session?.user?.id || null, // Save user_id if logged in
           full_name: personalData.fullName,
           whatsapp: personalData.whatsapp,
-          birth_date: personalData.birthDate || null,
+          birth_date: personalData.birthDate ? personalData.birthDate.toISOString().split('T')[0] : null,
           city: personalData.city || null,
+          state: personalData.state || null,
           accept_contact: personalData.acceptContact,
           answers: JSON.parse(JSON.stringify(answers)),
           total_score: results.totalScore,
