@@ -29,40 +29,42 @@ import ValidationPage from "./pages/ValidationPage";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/test" element={<Test />} />
-            <Route path="/quick-test" element={<QuickTest />} />
-            <Route path="/programs" element={<Programs />} />
-            <Route path="/programs/:slug" element={<ProgramDetail />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/track/:trackSlug" element={<Track />} />
-            <Route path="/personalized-results" element={<PersonalizedResults />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/profile-completion" element={<ProfileCompletion />} />
-            <Route path="/cms" element={<CMS />} />
-            <Route path="/gamification" element={<Gamification />} />
-            <Route path="/admin/*" element={<AdminRoutes />} />
-            <Route path="/validation" element={<ValidationPage />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </HelmetProvider>
-);
+function App() {
+  return (
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/test" element={<Test />} />
+              <Route path="/quick-test" element={<QuickTest />} />
+              <Route path="/programs" element={<Programs />} />
+              <Route path="/programs/:slug" element={<ProgramDetail />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/track/:trackSlug" element={<Track />} />
+              <Route path="/personalized-results" element={<PersonalizedResults />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile-completion" element={<ProfileCompletion />} />
+              <Route path="/cms" element={<CMS />} />
+              <Route path="/gamification" element={<Gamification />} />
+              <Route path="/admin/*" element={<AdminRoutes />} />
+              <Route path="/validation" element={<ValidationPage />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
+  );
+}
 
 export default App;
