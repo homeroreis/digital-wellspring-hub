@@ -56,7 +56,7 @@ const Auth = () => {
         const redirectTo = (location.state as any)?.redirectTo || "/";
         navigate(redirectTo, { replace: true });
       } else {
-        const redirectUrl = `http://localhost:8080/`;
+        const redirectUrl = `${window.location.origin}/`;
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -85,7 +85,7 @@ const Auth = () => {
         const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `http://localhost:8080/profile-completion`
+          redirectTo: `${window.location.origin}/profile-completion`
         }
       });
       
@@ -118,7 +118,7 @@ const Auth = () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `http://localhost:8080/auth`,
+        redirectTo: `${window.location.origin}/auth`,
       });
 
       if (error) throw error;
