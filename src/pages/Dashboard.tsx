@@ -28,11 +28,20 @@ const Dashboard = () => {
       }
 
       // Carregar perfil do usuário
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
+
+      console.log('=== DASHBOARD LOAD PROFILE ===');
+      console.log('User ID:', session.user.id);
+      console.log('Profile carregado:', profile);
+      console.log('Profile error:', profileError);
+
+      if (profileError) {
+        console.error('Erro ao carregar profile:', profileError);
+      }
 
       setUserProfile(profile);
 

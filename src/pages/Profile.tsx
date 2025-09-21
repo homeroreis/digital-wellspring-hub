@@ -76,29 +76,59 @@ const Profile = () => {
   };
 
   const updateProfile = async (updates: Partial<ProfileData>) => {
-    if (!user) return;
+    if (!user) {
+      console.error('Usuário não está logado');
+      return;
+    }
 
     try {
-      console.log('Tentando atualizar perfil:', updates);
-      const { error } = await supabase
+      console.log('=== INÍCIO UPDATE PROFILE ===');
+      console.log('User ID:', user.id);
+      console.log('Updates recebidos:', updates);
+      console.log('Profile atual antes do update:', profile);
+
+      const dataToUpdate = {
+        user_id: user.id,
+        ...updates,
+      };
+
+      console.log('Dados que serão enviados para o Supabase:', dataToUpdate);
+
+      const { data, error } = await supabase
         .from("profiles")
-        .upsert({
-          user_id: user.id,
-          ...updates,
-        });
+        .upsert(dataToUpdate, { 
+          onConflict: 'user_id',
+          ignoreDuplicates: false 
+        })
+        .select();
+
+      console.log('Resposta do Supabase - data:', data);
+      console.log('Resposta do Supabase - error:', error);
 
       if (error) {
-        console.error('Erro do Supabase:', error);
+        console.error('Erro específico do Supabase:', error);
         throw error;
       }
 
-      setProfile(prev => ({ ...prev, ...updates }));
+      console.log('Atualizando estado local...');
+      setProfile(prev => {
+        const newProfile = { ...prev, ...updates };
+        console.log('Novo profile no estado:', newProfile);
+        return newProfile;
+      });
+
       toast({
         title: "Perfil atualizado",
         description: "Suas informações foram salvas com sucesso.",
       });
+
+      console.log('=== FIM UPDATE PROFILE (SUCESSO) ===');
     } catch (error: any) {
+      console.error('=== ERRO NO UPDATE PROFILE ===');
       console.error('Erro completo:', error);
+      console.error('Erro message:', error.message);
+      console.error('Erro details:', error.details);
+      console.log('=== FIM UPDATE PROFILE (ERRO) ===');
       toast({
         title: "Erro ao salvar",
         description: error.message,

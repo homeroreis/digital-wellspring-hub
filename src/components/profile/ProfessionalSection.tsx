@@ -22,13 +22,26 @@ const ProfessionalSection = ({ profile, onUpdate }: ProfessionalSectionProps) =>
   const handleSave = async () => {
     setLoading(true);
     try {
-      await onUpdate({
+      console.log('=== PROFESSIONAL SECTION SAVE ===');
+      console.log('Form data atual:', formData);
+      console.log('Profile recebido:', profile);
+      
+      const updateData = {
         profession: formData.profession,
         education_level: formData.education_level,
         income_range: formData.income_range,
         how_found_us: formData.how_found_us,
-      });
+      };
+      
+      console.log('Dados que serão enviados via onUpdate:', updateData);
+      
+      await onUpdate(updateData);
       setIsEditing(false);
+      
+      console.log('=== PROFESSIONAL SECTION SAVE SUCCESS ===');
+    } catch (error) {
+      console.error('=== ERRO NO PROFESSIONAL SECTION ===');
+      console.error('Erro:', error);
     } finally {
       setLoading(false);
     }
