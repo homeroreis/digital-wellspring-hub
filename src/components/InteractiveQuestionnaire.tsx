@@ -1,292 +1,144 @@
-
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Smartphone, Heart, Users, Sparkles, CheckCircle, Clock, TrendingUp, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { ArrowRight, ArrowLeft, CheckCircle, Smartphone, Clock, Award, Users, AlertCircle, Target, Sparkles, Plus, Minus } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-interface Answer {
-  value: number;
-  timeSpent: number;
-  timestamp: number;
+interface Question {
+  id: string;
+  question: string;
+  category: 'comportamento' | 'vida_cotidiana' | 'relacoes' | 'espiritual';
+  options?: { label: string; value: number }[];
+  type: 'slider' | 'radio' | 'custom';
 }
 
-interface QuestionnaireResults {
-  totalScore: number;
-  categoryScores: {
-    comportamento: number;
-    vida_cotidiana: number;
-    relacoes: number;
-    espiritual: number;
-  };
-  trackType: string;
-  totalTimeSpent: number;
-  answersData: Record<number, Answer>;
-}
+const questions: Question[] = [
+  { id: 'q1', question: 'Com que frequência você sente ansiedade ou estresse por estar longe do seu celular (Nomofobia)?', category: 'comportamento', options: [
+    { label: 'Nunca', value: 1 }, { label: 'Raramente', value: 2 }, { label: 'Às vezes', value: 3 }, { label: 'Frequentemente', value: 4 }, { label: 'Sempre', value: 5 }
+  ], type: 'radio' },
+  { id: 'q2', question: 'Qual a sua nota para o impacto da tecnologia em seus momentos de oração, meditação e estudo da Bíblia?', category: 'espiritual', options: [
+    { label: 'Totalmente negativo', value: 5 }, { label: 'Negativo', value: 4 }, { label: 'Neutro', value: 3 }, { label: 'Positivo', value: 2 }, { label: 'Totalmente positivo', value: 1 }
+  ], type: 'radio' },
+  { id: 'q3', question: 'Em uma escala de 1 a 5, quão bem você gerencia seu tempo de tela, em relação às suas responsabilidades (trabalho, família)?', category: 'vida_cotidiana', type: 'slider' },
+  { id: 'q4', question: 'O uso excessivo de tecnologia já causou conflitos em seus relacionamentos familiares ou fraternos?', category: 'relacoes', options: [
+    { label: 'Nunca', value: 1 }, { label: 'Raramente', value: 2 }, { label: 'Às vezes', value: 3 }, { label: 'Frequentemente', value: 4 }, { label: 'Sempre', value: 5 }
+  ], type: 'radio' },
+  { id: 'q5', question: 'Em uma escala de 1 a 5, o uso de tecnologia prejudica sua qualidade de sono?', category: 'comportamento', type: 'slider' },
+  { id: 'q6', question: 'Com que frequência você interrompe conversas pessoais para olhar o celular?', category: 'relacoes', options: [
+    { label: 'Nunca', value: 1 }, { label: 'Raramente', value: 2 }, { label: 'Às vezes', value: 3 }, { label: 'Frequentemente', value: 4 }, { label: 'Sempre', value: 5 }
+  ], type: 'radio' },
+  { id: 'q7', question: 'Você sente a necessidade de verificar notificações constantemente, mesmo quando não há razão para isso?', category: 'comportamento', options: [
+    { label: 'Nunca', value: 1 }, { label: 'Raramente', value: 2 }, { label: 'Às vezes', value: 3 }, { label: 'Frequentemente', value: 4 }, { label: 'Sempre', value: 5 }
+  ], type: 'radio' },
+  { id: 'q8', question: 'Qual a sua nota para o impacto da tecnologia em sua capacidade de concentração e foco nas tarefas diárias?', category: 'vida_cotidiana', options: [
+    { label: 'Totalmente positivo', value: 1 }, { label: 'Positivo', value: 2 }, { label: 'Neutro', value: 3 }, { label: 'Negativo', value: 4 }, { label: 'Totalmente negativo', value: 5 }
+  ], type: 'radio' },
+  { id: 'q9', question: 'Você já se sentiu culpado ou envergonhado pelo tempo que passa em dispositivos eletrônicos?', category: 'espiritual', options: [
+    { label: 'Nunca', value: 1 }, { label: 'Raramente', value: 2 }, { label: 'Às vezes', value: 3 }, { label: 'Frequentemente', value: 4 }, { label: 'Sempre', value: 5 }
+  ], type: 'radio' },
+  { id: 'q10', question: 'Qual a sua nota para o impacto da tecnologia em sua capacidade de estar presente e aproveitar momentos de lazer offline?', category: 'vida_cotidiana', options: [
+    { label: 'Totalmente positivo', value: 1 }, { label: 'Positivo', value: 2 }, { label: 'Neutro', value: 3 }, { label: 'Negativo', value: 4 }, { label: 'Totalmente negativo', value: 5 }
+  ], type: 'radio' },
+];
 
 const InteractiveQuestionnaire = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, Answer>>({});
-  const [timeStarted, setTimeStarted] = useState(Date.now());
-  const [questionStartTime, setQuestionStartTime] = useState(Date.now());
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-
-  const questions = [
-    // Categoria 1: Comportamento com o Smartphone (5 questões)
-    {
-      id: 1,
-      category: 'comportamento',
-      categoryName: 'Comportamento com o Smartphone',
-      text: 'Verifico meu smartphone imediatamente ao acordar, antes mesmo de realizar minhas atividades matinais.',
-      icon: Smartphone,
-      color: '#3B82F6'
-    },
-    {
-      id: 2,
-      category: 'comportamento',
-      categoryName: 'Comportamento com o Smartphone',
-      text: 'Sinto-me ansioso ou inquieto quando percebo que meu celular está com pouca bateria ou sem sinal.',
-      icon: Smartphone,
-      color: '#3B82F6'
-    },
-    {
-      id: 3,
-      category: 'comportamento',
-      categoryName: 'Comportamento com o Smartphone',
-      text: 'Interrompo conversas presenciais para verificar notificações ou usar meu smartphone.',
-      icon: Smartphone,
-      color: '#3B82F6'
-    },
-    {
-      id: 4,
-      category: 'comportamento',
-      categoryName: 'Comportamento com o Smartphone',
-      text: 'Perco a noção do tempo quando estou usando meu smartphone.',
-      icon: Smartphone,
-      color: '#3B82F6'
-    },
-    {
-      id: 5,
-      category: 'comportamento',
-      categoryName: 'Comportamento com o Smartphone',
-      text: 'Durmo com o celular próximo a mim e verifico nos últimos momentos antes de dormir.',
-      icon: Smartphone,
-      color: '#3B82F6'
-    },
-
-    // Categoria 2: Impacto na Vida Cotidiana (5 questões)
-    {
-      id: 6,
-      category: 'vida_cotidiana',
-      categoryName: 'Impacto na Vida Cotidiana',
-      text: 'Percebo que passo mais tempo do que pretendia nas redes sociais ou navegando na internet.',
-      icon: Clock,
-      color: '#10B981'
-    },
-    {
-      id: 7,
-      category: 'vida_cotidiana',
-      categoryName: 'Impacto na Vida Cotidiana',
-      text: 'Deixo de realizar tarefas importantes devido ao uso excessivo do smartphone.',
-      icon: Clock,
-      color: '#10B981'
-    },
-    {
-      id: 8,
-      category: 'vida_cotidiana',
-      categoryName: 'Impacto na Vida Cotidiana',
-      text: 'Familiares ou amigos próximos reclamam sobre o tempo que passo conectado.',
-      icon: Clock,
-      color: '#10B981'
-    },
-    {
-      id: 9,
-      category: 'vida_cotidiana',
-      categoryName: 'Impacto na Vida Cotidiana',
-      text: 'Tenho dificuldade em controlar o tempo de uso do meu smartphone, mesmo quando tento.',
-      icon: Clock,
-      color: '#10B981'
-    },
-    {
-      id: 10,
-      category: 'vida_cotidiana',
-      categoryName: 'Impacto na Vida Cotidiana',
-      text: 'Uso o smartphone como forma de evitar momentos de tédio, solidão ou reflexão.',
-      icon: Clock,
-      color: '#10B981'
-    },
-
-    // Categoria 3: Impacto nas Relações Pessoais (5 questões)
-    {
-      id: 11,
-      category: 'relacoes',
-      categoryName: 'Impacto nas Relações Pessoais',
-      text: 'As pessoas ao meu redor comentam que estou sempre distraído com o celular.',
-      icon: Users,
-      color: '#F59E0B'
-    },
-    {
-      id: 12,
-      category: 'relacoes',
-      categoryName: 'Impacto nas Relações Pessoais',
-      text: 'Perco momentos importantes de interação familiar por estar atento às notificações.',
-      icon: Users,
-      color: '#F59E0B'
-    },
-    {
-      id: 13,
-      category: 'relacoes',
-      categoryName: 'Impacto nas Relações Pessoais',
-      text: 'Uso o smartphone durante momentos que deveriam ser de conexão com outras pessoas (refeições, encontros).',
-      icon: Users,
-      color: '#F59E0B'
-    },
-    {
-      id: 14,
-      category: 'relacoes',
-      categoryName: 'Impacto nas Relações Pessoais',
-      text: 'Comparo minha vida com o que vejo nas redes sociais e isso me deixa insatisfeito.',
-      icon: Users,
-      color: '#F59E0B'
-    },
-    {
-      id: 15,
-      category: 'relacoes',
-      categoryName: 'Impacto nas Relações Pessoais',
-      text: 'Tenho dificuldade em me concentrar em uma conversa sem verificar o celular.',
-      icon: Users,
-      color: '#F59E0B'
-    },
-
-    // Categoria 4: Impacto Espiritual (5 questões)
-    {
-      id: 16,
-      category: 'espiritual',
-      categoryName: 'Impacto Espiritual',
-      text: 'O uso do smartphone interfere no tempo que dedico à oração, meditação ou estudo bíblico.',
-      icon: Sparkles,
-      color: '#8B5CF6'
-    },
-    {
-      id: 17,
-      category: 'espiritual',
-      categoryName: 'Impacto Espiritual',
-      text: 'Sinto-me espiritualmente desconectado após longos períodos usando o smartphone.',
-      icon: Sparkles,
-      color: '#8B5CF6'
-    },
-    {
-      id: 18,
-      category: 'espiritual',
-      categoryName: 'Impacto Espiritual',
-      text: 'Verifico o celular durante momentos de culto, oração ou reflexão espiritual.',
-      icon: Sparkles,
-      color: '#8B5CF6'
-    },
-    {
-      id: 19,
-      category: 'espiritual',
-      categoryName: 'Impacto Espiritual',
-      text: 'O conteúdo que consumo online frequentemente contradiz meus valores espirituais.',
-      icon: Sparkles,
-      color: '#8B5CF6'
-    },
-    {
-      id: 20,
-      category: 'espiritual',
-      categoryName: 'Impacto Espiritual',
-      text: 'Percebo que meus hábitos digitais me distanciam de práticas que fortalecem minha fé.',
-      icon: Sparkles,
-      color: '#8B5CF6'
-    }
-  ];
-
-  const scaleLabels = [
-    { value: 1, label: 'Raramente', descriptor: '1x por semana ou menos', color: '#10B981' },
-    { value: 2, label: 'Às vezes', descriptor: '2-3x por semana', color: '#84CC16' },
-    { value: 3, label: 'Frequentemente', descriptor: '4-5x por semana', color: '#EAB308' },
-    { value: 4, label: 'Quase sempre', descriptor: '6x por semana', color: '#F97316' },
-    { value: 5, label: 'Sempre', descriptor: 'Todos os dias', color: '#DC2626' }
-  ];
-
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
-  const currentQ = questions[currentQuestion];
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [timerActive, setTimerActive] = useState(true);
 
   useEffect(() => {
-    setQuestionStartTime(Date.now());
-  }, [currentQuestion]);
-
-  const handleAnswer = (value: number) => {
-    const timeSpent = Date.now() - questionStartTime;
-    setAnswers(prev => ({
-      ...prev,
-      [currentQ.id]: {
-        value,
-        timeSpent,
-        timestamp: Date.now()
+    const interval = setInterval(() => {
+      if (timerActive) {
+        setTimer(prev => prev + 1);
       }
-    }));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timerActive]);
+
+  const currentQ = questions[currentQIndex];
+
+  const handleAnswerChange = (value: number) => {
+    setAnswers(prev => ({ ...prev, [currentQ.id]: { value, category: currentQ.category } }));
   };
 
   const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
+    if (currentQIndex < questions.length - 1) {
+      setCurrentQIndex(currentQIndex + 1);
     } else {
       handleSubmit();
     }
   };
 
   const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(prev => prev - 1);
+    if (currentQIndex > 0) {
+      setCurrentQIndex(currentQIndex - 1);
     }
   };
 
-  const calculateResults = (): QuestionnaireResults => {
-    const categoryScores = {
+  const calculateResults = () => {
+    let totalScore = 0;
+    const categoryScores: { [key: string]: number } = {
       comportamento: 0,
       vida_cotidiana: 0,
       relacoes: 0,
-      espiritual: 0
+      espiritual: 0,
     };
 
-    let totalScore = 0;
+    const answersData: { [key: string]: any } = {};
 
-    Object.entries(answers).forEach(([questionId, answer]) => {
-      const question = questions.find(q => q.id === parseInt(questionId));
-      if (question) {
-        categoryScores[question.category as keyof typeof categoryScores] += answer.value;
-        totalScore += answer.value;
-      }
+    Object.entries(answers).forEach(([qId, answer]) => {
+      const { value, category } = answer as { value: number; category: string };
+      totalScore += value;
+      categoryScores[category] += value;
+      answersData[qId] = value;
     });
 
-    const trackType = totalScore <= 50 ? 'liberdade' : 
-                     totalScore <= 75 ? 'equilibrio' : 'renovacao';
+    // Normalize scores to 0-100 scale
+    // Max score for each category is 25 (5 questions * 5 points)
+    // Max total score is 100 (20 questions, but we only have 10, so let's adjust)
+    // Let's assume max score for these 10 questions is 50.
+    const maxPossibleScore = 50;
+    const normalizedScore = Math.min(Math.round((totalScore / maxPossibleScore) * 100), 100);
 
-    const totalTimeSpent = Math.round((Date.now() - timeStarted) / 1000);
+    let trackType: 'liberdade' | 'equilibrio' | 'renovacao';
+    if (totalScore <= 20) {
+      trackType = 'liberdade';
+    } else if (totalScore <= 35) {
+      trackType = 'equilibrio';
+    } else {
+      trackType = 'renovacao';
+    }
 
     return {
-      totalScore,
+      totalScore: normalizedScore,
       categoryScores,
+      totalTimeSpent: timer,
+      answersData,
       trackType,
-      totalTimeSpent,
-      answersData: answers
     };
   };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setTimerActive(false);
     
     try {
       const results = calculateResults();
       
-      // Save to Supabase
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.error('User not authenticated');
+        toast.error('Você precisa estar logado para salvar os resultados.');
         return;
       }
 
@@ -301,18 +153,21 @@ const InteractiveQuestionnaire = () => {
           espiritual_score: results.categoryScores.espiritual,
           total_time_spent: results.totalTimeSpent,
           answers: results.answersData as any,
-          track_type: results.trackType
+          track_type: results.trackType,
+          completed_at: new Date().toISOString()
         });
 
       if (error) {
         console.error('Error saving questionnaire results:', error);
+        toast.error('Ocorreu um erro ao salvar os resultados.');
         return;
       }
 
-      // Navigate to onboarding with recommended track
-      navigate(`/onboarding?track=${results.trackType}`);
+      // Navigate to personalized results page with data
+      navigate(`/results?score=${results.totalScore}&track=${results.trackType}&comportamento=${results.categoryScores.comportamento}&vida_cotidiana=${results.categoryScores.vida_cotidiana}&relacoes=${results.categoryScores.relacoes}&espiritual=${results.categoryScores.espiritual}&time=${results.totalTimeSpent}`);
     } catch (error) {
       console.error('Error submitting questionnaire:', error);
+      toast.error('Ocorreu um erro ao enviar o questionário.');
     } finally {
       setIsSubmitting(false);
     }
@@ -327,11 +182,8 @@ const InteractiveQuestionnaire = () => {
         <Card className="max-w-md mx-4">
           <CardContent className="p-12 text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto mb-6"></div>
-            <h2 className="text-2xl font-bold mb-4">Processando seus resultados...</h2>
-            <p className="text-muted-foreground">Em alguns segundos você verá sua análise personalizada</p>
-            <div className="mt-6">
-              <Progress value={100} className="h-2 animate-pulse" />
-            </div>
+            <h2 className="text-xl font-bold">Processando seus resultados...</h2>
+            <p className="text-muted-foreground">Isso não deve demorar muito. Prepare-se para a sua jornada!</p>
           </CardContent>
         </Card>
       </div>
@@ -339,204 +191,99 @@ const InteractiveQuestionnaire = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Medical Disclaimer */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
-          <div className="flex items-start">
-            <AlertTriangle className="w-6 h-6 text-yellow-600 mr-3 mt-1 flex-shrink-0" />
-            <div>
-              <h3 className="font-semibold text-yellow-800 mb-2">⚠️ IMPORTANTE</h3>
-              <p className="text-sm text-yellow-700">
-                Este teste não substitui avaliação psicológica ou médica. É uma ferramenta de autoavaliação 
-                e conscientização sobre hábitos digitais. Para questões de saúde mental, consulte um profissional qualificado.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Header with Progress */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <Smartphone className="w-8 h-8 text-primary" />
-              <span className="text-xl font-bold">Além das Notificações</span>
-            </div>
-            <div className="text-right">
-              <div className="text-sm text-muted-foreground">
-                Questão {currentQuestion + 1} de {questions.length}
-              </div>
-              <div className="text-lg font-semibold text-primary">
-                {Math.round(progress)}% completo
-              </div>
-            </div>
-          </div>
-          
-          <Progress value={progress} className="h-4 mb-4" />
-          
-          {/* Progress Steps */}
-          <div className="flex justify-between">
-            {questions.map((_, index) => (
-              <div
-                key={index}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index < currentQuestion
-                    ? 'bg-green-500 scale-125'
-                    : index === currentQuestion
-                      ? 'bg-primary scale-150 animate-pulse'
-                      : 'bg-muted'
-                }`}
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex flex-col justify-between">
+      <div className="flex-1 flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl">
+          <CardHeader className="text-center p-6 sm:p-12 space-y-4">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+              Teste de Consciência Digital
+            </h1>
+            <p className="text-muted-foreground">
+              Responda às perguntas abaixo para entender sua relação com a tecnologia e iniciar sua jornada de transformação espiritual.
+            </p>
+          </CardHeader>
+          <Separator />
+          <CardContent className="p-6 sm:p-12 space-y-8">
+            <div className="text-center">
+              <span className="text-sm font-medium text-gray-600">
+                Questão {currentQIndex + 1} de {questions.length}
+              </span>
+              <Progress
+                value={((currentQIndex + 1) / questions.length) * 100}
+                className="mt-2 h-2"
               />
-            ))}
-          </div>
-        </div>
-
-        {/* Question Card */}
-        <Card className="mb-8 overflow-hidden">
-          {/* Category Header */}
-          <div 
-            className="px-8 py-6 text-white"
-            style={{ backgroundColor: currentQ.color }}
-          >
-            <div className="flex items-center">
-              <currentQ.icon className="w-8 h-8 mr-3" />
-              <div>
-                <div className="text-sm opacity-90">{currentQ.categoryName}</div>
-                <div className="text-lg font-semibold">
-                  Questão {currentQuestion + 1}
-                </div>
-              </div>
             </div>
-          </div>
-
-          <CardContent className="p-8">
-            <h2 className="text-2xl font-bold mb-8 leading-relaxed">
-              {currentQ.text}
-            </h2>
-
-            <div className="space-y-4 mb-8">
-              <p className="text-muted-foreground font-medium mb-6">
-                Com que frequência isso acontece com você?
+            
+            <div className="space-y-6">
+              <p className="text-2xl font-bold text-gray-900 leading-relaxed">
+                {currentQ.question}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {scaleLabels.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => handleAnswer(option.value)}
-                    className={`relative p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-105 ${
-                      currentAnswer === option.value
-                        ? 'border-primary bg-primary/10 shadow-lg scale-105'
-                        : 'border-border hover:border-primary/50 hover:shadow-md'
-                    }`}
-                  >
-                     <div className="flex items-center justify-between">
-                       <div className="text-left">
-                         <div className="text-lg font-semibold mb-1">
-                           {option.label}
-                         </div>
-                         <div className="text-sm text-muted-foreground mb-1">
-                           {option.descriptor}
-                         </div>
-                         <div className="text-xs text-muted-foreground/70">
-                           Nível {option.value}
-                         </div>
-                       </div>
-                      
-                      <div 
-                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl"
-                        style={{ backgroundColor: option.color }}
-                      >
-                        {option.value}
-                      </div>
-                    </div>
-                    
-                    {currentAnswer === option.value && (
-                      <CheckCircle className="absolute top-2 right-2 w-6 h-6 text-green-500 animate-fade-in" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Insight Box */}
-            {isAnswered && (
-              <Card className="bg-secondary/40 animate-fade-in">
-                <CardContent className="p-6">
-                  <div className="flex items-start">
-                    <AlertTriangle className="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold mb-2">
-                        {currentAnswer >= 4 ? 'Sinal de Alerta' : 
-                         currentAnswer >= 2 ? 'Ponto de Atenção' : 'Muito bem!'}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {currentAnswer >= 4 
-                          ? 'Esta resposta indica um padrão que pode estar impactando significativamente sua vida.'
-                          : currentAnswer >= 2
-                          ? 'Este comportamento merece atenção para não se tornar problemático.'
-                          : 'Você demonstra um bom controle neste aspecto. Continue assim!'
-                        }
-                      </p>
-                    </div>
+              {currentQ.type === 'slider' && (
+                <div className="space-y-4">
+                  <Slider
+                    defaultValue={[currentAnswer || 3]}
+                    max={5}
+                    step={1}
+                    onValueChange={(value) => handleAnswerChange(value[0])}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                    <span>5</span>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Navigation */}
-        <div className="flex justify-between items-center">
-          <Button
-            onClick={handlePrevious}
-            disabled={currentQuestion === 0}
-            variant="outline"
-            className="transition-smooth"
-          >
-            <ChevronLeft className="w-5 h-5 mr-2" />
-            Anterior
-          </Button>
-
-          <div className="text-center">
-            <div className="text-sm text-muted-foreground mb-2">
-              {Object.keys(answers).length} de {questions.length} respondidas
+                </div>
+              )}
+              
+              {currentQ.type === 'radio' && (
+                <RadioGroup
+                  onValueChange={(value) => handleAnswerChange(parseInt(value))}
+                  value={currentAnswer?.toString()}
+                >
+                  {currentQ.options?.map((option) => (
+                    <div
+                      key={option.value}
+                      className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    >
+                      <RadioGroupItem value={option.value.toString()} id={`${currentQ.id}-${option.value}`} />
+                      <Label htmlFor={`${currentQ.id}-${option.value}`} className="flex-1 text-base cursor-pointer">
+                        {option.label}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
             </div>
-            <Progress 
-              value={(Object.keys(answers).length / questions.length) * 100} 
-              className="w-32 h-2"
-            />
+          </CardContent>
+          <Separator />
+          <div className="p-6 flex justify-between items-center">
+            <Button
+              onClick={handlePrevious}
+              disabled={currentQIndex === 0}
+              variant="outline"
+              className="flex items-center"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Anterior
+            </Button>
+            
+            <Button
+              onClick={handleNext}
+              disabled={!isAnswered}
+              className="flex items-center bg-yellow-500 text-gray-800 hover:bg-yellow-600"
+            >
+              {currentQIndex === questions.length - 1 ? 'Finalizar' : 'Próximo'}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
           </div>
-
-          <Button
-            onClick={handleNext}
-            disabled={!isAnswered}
-            className="transition-smooth"
-          >
-            {currentQuestion === questions.length - 1 ? (
-              <>
-                Ver Resultado
-                <TrendingUp className="w-5 h-5 ml-2" />
-              </>
-            ) : (
-              <>
-                Próxima
-                <ChevronRight className="w-5 h-5 ml-2" />
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* Help Text */}
-        <div className="text-center mt-8">
-          <p className="text-sm text-muted-foreground">
-            💡 Responda com sinceridade para receber uma análise precisa
-          </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            🔒 Suas respostas são confidenciais e utilizadas apenas para gerar seu relatório personalizado
-          </p>
-        </div>
+        </Card>
       </div>
+      <footer className="text-center text-xs text-muted-foreground py-4">
+        Tempo gasto: {Math.floor(timer / 60)} min {timer % 60} seg
+      </footer>
     </div>
   );
 };
