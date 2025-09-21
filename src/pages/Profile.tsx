@@ -79,6 +79,7 @@ const Profile = () => {
     if (!user) return;
 
     try {
+      console.log('Tentando atualizar perfil:', updates);
       const { error } = await supabase
         .from("profiles")
         .upsert({
@@ -86,7 +87,10 @@ const Profile = () => {
           ...updates,
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro do Supabase:', error);
+        throw error;
+      }
 
       setProfile(prev => ({ ...prev, ...updates }));
       toast({
@@ -94,6 +98,7 @@ const Profile = () => {
         description: "Suas informações foram salvas com sucesso.",
       });
     } catch (error: any) {
+      console.error('Erro completo:', error);
       toast({
         title: "Erro ao salvar",
         description: error.message,
