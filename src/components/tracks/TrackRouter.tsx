@@ -34,18 +34,31 @@ const TrackRouter: React.FC<TrackRouterProps> = ({ userId, trackSlug, userScore 
       setLoading(true);
       setError(null);
 
-      // Carrega o perfil completo do usuário
-      const profile = await PersonalizationService.loadUserProfile(userId);
-      
-      if (!profile) {
-        // Se não tem perfil, precisa criar um primeiro
-        setError('Perfil não encontrado. Redirecionando para o teste...');
+      // Buscar dados básicos do usuário
+      const { data: userData } = await supabase
+        .from('questionnaire_results')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!userData) {
+        setError('Resultado do teste não encontrado. Redirecionando...');
         setTimeout(() => navigate('/test'), 2000);
         return;
       }
 
-      setUserProfile(profile);
-      setCurrentDay(profile.progressData.currentDay || 1);
+      // Buscar progresso da trilha
+      const { data: trackProgress } = await supabase
+        .from('user_track_progress')
+        .select('current_day')
+        .eq('user_id', userId)
+        .eq('track_slug', trackSlug)
+        .maybeSingle();
+
+      setCurrentDay(trackProgress?.current_day || 1);
+      setUserProfile(userData);
 
       // Verifica se já fez onboarding
       const { data: preferences, error: prefError } = await supabase
@@ -53,7 +66,7 @@ const TrackRouter: React.FC<TrackRouterProps> = ({ userId, trackSlug, userScore 
         .select('onboarding_completed')
         .eq('user_id', userId)
         .eq('track_slug', trackSlug)
-        .single();
+        .maybeSingle();
 
       if (prefError && prefError.code !== 'PGRST116') {
         throw prefError;
@@ -61,11 +74,6 @@ const TrackRouter: React.FC<TrackRouterProps> = ({ userId, trackSlug, userScore 
 
       setHasCompletedOnboarding(preferences?.onboarding_completed || false);
 
-      // Se não completou onboarding, inicializa a trilha personalizada
-      if (!preferences?.onboarding_completed) {
-        // Gera conteúdo personalizado para os primeiros dias
-        await PersonalizationService.getPersonalizedDay(userId, 1);
-      }
     } catch (error: any) {
       console.error('Erro ao verificar status do onboarding:', error);
       setError('Erro ao carregar sua trilha. Por favor, tente novamente.');
@@ -104,10 +112,8 @@ const TrackRouter: React.FC<TrackRouterProps> = ({ userId, trackSlug, userScore 
           is_active: true
         });
 
-      // Gera conteúdo personalizado para a trilha completa
-      for (let day = 1; day <= 3; day++) {
-        await PersonalizationService.getPersonalizedDay(userId, day);
-      }
+      // Gera conteúdo personalizado para os primeiros dias
+      await PersonalizationService.getPersonalizedContent(userId, trackSlug, 1);
 
       setHasCompletedOnboarding(true);
       

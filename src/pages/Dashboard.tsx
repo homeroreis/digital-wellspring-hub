@@ -102,13 +102,27 @@ const Dashboard = () => {
       // Buscar resultado do questionário para trilha recomendada
       const { data: result } = await supabase
         .from('questionnaire_results')
-        .select('*')
+        .select('track_type, total_score, created_at')
         .eq('user_id', session.user.id)
-        .order('completed_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (result && result.track_type) {
+        // Verificar se já completou onboarding para esta trilha
+        const { data: preferences } = await supabase
+          .from('user_preferences')
+          .select('onboarding_completed')
+          .eq('user_id', session.user.id)
+          .eq('track_slug', result.track_type)
+          .maybeSingle();
+        
+        // Se não completou onboarding, redirecionar
+        if (!preferences?.onboarding_completed) {
+          navigate(`/onboarding?track=${result.track_type}`, { replace: true });
+          return;
+        }
+        
         setRecommendedTrack(result.track_type);
       }
 
