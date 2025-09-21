@@ -21,6 +21,7 @@ import Gamification from "./pages/Gamification";
 import Onboarding from "./pages/Onboarding";
 import Track from "./pages/Track";
 import PersonalizedResults from "./pages/PersonalizedResults";
+import Results from "./pages/Results";
 import Profile from "./pages/Profile";
 import ProfileCompletion from "./pages/ProfileCompletion";
 import AdminRoutes from "./pages/admin/AdminRoutes";
@@ -41,6 +42,7 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/test" element={<Test />} />
+              <Route path="/results" element={<Results />} />
               <Route path="/quick-test" element={<QuickTest />} />
               <Route path="/programs" element={<Programs />} />
               <Route path="/programs/:slug" element={<ProgramDetail />} />

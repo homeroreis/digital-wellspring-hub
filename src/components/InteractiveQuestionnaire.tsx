@@ -309,8 +309,8 @@ const InteractiveQuestionnaire = () => {
         return;
       }
 
-      // Navigate to onboarding with recommended track
-      navigate(`/onboarding?track=${results.trackType}`);
+      // Navigate to results page
+      navigate(`/results?score=${results.totalScore}&track=${results.trackType}&comportamento=${results.categoryScores.comportamento}&vida_cotidiana=${results.categoryScores.vida_cotidiana}&relacoes=${results.categoryScores.relacoes}&espiritual=${results.categoryScores.espiritual}&time=${results.totalTimeSpent}`);
     } catch (error) {
       console.error('Error submitting questionnaire:', error);
     } finally {
