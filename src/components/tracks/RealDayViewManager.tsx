@@ -117,6 +117,8 @@ const RealDayViewManager: React.FC<RealDayViewManagerProps> = ({
 
   const completeActivity = async (activityId: string, index: number) => {
     try {
+      console.log('Tentando completar atividade:', { activityId, index, userId, selectedDay });
+      
       await PersonalizationService.completeActivity(userId, selectedDay, activityId);
       
       // Atualiza estado local
@@ -124,6 +126,8 @@ const RealDayViewManager: React.FC<RealDayViewManagerProps> = ({
         const updatedActivities = [...dayContent.activities];
         updatedActivities[index] = { ...updatedActivities[index], completed: true };
         setDayContent({ ...dayContent, activities: updatedActivities });
+        
+        console.log('Estado local atualizado com sucesso');
       }
 
       toast({
@@ -131,10 +135,10 @@ const RealDayViewManager: React.FC<RealDayViewManagerProps> = ({
         description: "Continue assim! 🎉",
       });
     } catch (error) {
-      console.error('Erro ao completar atividade:', error);
+      console.error('ERRO DETALHADO ao completar atividade:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível marcar a atividade como completa",
+        description: `Não foi possível marcar a atividade como completa: ${error.message}`,
         variant: "destructive",
       });
     }

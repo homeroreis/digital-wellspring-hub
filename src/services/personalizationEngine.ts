@@ -300,22 +300,60 @@ export class PersonalizationService {
   }
 
   /**
-   * Completa uma atividade - INTEGRAÇÃO REAL
+   * Completa uma atividade - IMPLEMENTAÇÃO DIRETA NO BANCO
    */
   static async completeActivity(userId: string, dayNumber: number, activityId: string): Promise<void> {
     try {
-      // Usar RPC do Supabase para completar atividade
-      const { error } = await supabase.rpc('complete_activity', {
-        p_track_slug: (await this.getUserProfile(userId))?.testResults.trackType || 'equilibrio',
-        p_day_number: dayNumber,
-        p_activity_index: parseInt(activityId.split('-').pop() || '0'),
-        p_activity_title: `Atividade ${activityId}`,
-        p_activity_type: 'activity'
-      });
-
-      if (error) throw error;
+      console.log('PersonalizationService.completeActivity iniciado:', { userId, dayNumber, activityId });
       
-      console.log('Atividade completada:', { userId, dayNumber, activityId });
+      // Buscar o perfil do usuário para obter a trilha
+      const profile = await this.getUserProfile(userId);
+      if (!profile) {
+        throw new Error('Perfil do usuário não encontrado');
+      }
+
+      const trackSlug = profile.testResults.trackType;
+      console.log('Track identificada:', trackSlug);
+      
+      // Verificar se já existe registro de atividade para evitar duplicatas
+      const { data: existingActivity } = await supabase
+        .from('user_activity_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('track_slug', trackSlug)
+        .eq('day_number', dayNumber)
+        .eq('activity_index', parseInt(activityId.replace('activity-', '')))
+        .maybeSingle();
+
+      if (existingActivity) {
+        console.log('Atividade já completada anteriormente');
+        return; // Atividade já foi completada
+      }
+      
+      // Inserir diretamente na tabela user_activity_progress
+      const activityData = {
+        user_id: userId,
+        track_slug: trackSlug,
+        day_number: dayNumber,
+        activity_index: parseInt(activityId.replace('activity-', '')),
+        activity_type: 'activity',
+        activity_title: `Atividade do dia ${dayNumber}`,
+        points_earned: 10,
+        completed_at: new Date().toISOString()
+      };
+      
+      console.log('Dados da atividade a serem inseridos:', activityData);
+      
+      const { error } = await supabase
+        .from('user_activity_progress')
+        .insert(activityData);
+
+      if (error) {
+        console.error('Erro detalhado ao completar atividade:', error);
+        throw new Error(`Erro no banco de dados: ${error.message} (Código: ${error.code})`);
+      }
+      
+      console.log('Atividade completada com sucesso no banco');
     } catch (error) {
       console.error('Erro ao completar atividade:', error);
       throw error;
@@ -323,22 +361,38 @@ export class PersonalizationService {
   }
 
   /**
-   * Completa um dia - INTEGRAÇÃO REAL
+   * Completa um dia - IMPLEMENTAÇÃO DIRETA NO BANCO
    */
   static async completeDay(userId: string, dayNumber: number, points: number): Promise<void> {
     try {
-      // Usar RPC do Supabase para completar dia
+      // Buscar o perfil do usuário para obter a trilha
       const profile = await this.getUserProfile(userId);
-      if (!profile) throw new Error('Perfil não encontrado');
+      if (!profile) {
+        throw new Error('Perfil do usuário não encontrado');
+      }
 
-      const { error } = await supabase.rpc('complete_day', {
-        p_track_slug: profile.testResults.trackType,
-        p_day_number: dayNumber
-      });
+      const trackSlug = profile.testResults.trackType;
 
-      if (error) throw error;
+      // Atualizar ou inserir progresso da trilha
+      const { error } = await supabase
+        .from('user_track_progress')
+        .upsert({
+          user_id: userId,
+          track_slug: trackSlug,
+          current_day: dayNumber + 1,
+          total_points: (profile.progressData?.totalPoints || 0) + points,
+          streak_days: (profile.progressData?.streak || 0) + 1,
+          level_number: Math.floor(((profile.progressData?.totalPoints || 0) + points) / 100) + 1,
+          last_activity_at: new Date().toISOString(),
+          is_active: true
+        });
+
+      if (error) {
+        console.error('Erro detalhado ao completar dia:', error);
+        throw error;
+      }
       
-      console.log('Dia completado:', { userId, dayNumber, points });
+      console.log('Dia completado com sucesso:', { userId, dayNumber, points, trackSlug });
     } catch (error) {
       console.error('Erro ao completar dia:', error);
       throw error;
