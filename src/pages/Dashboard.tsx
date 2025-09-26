@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, Trophy, Star, Flame, TrendingUp, Target } from "lucide-react";
+import EnhancedGamificationPanel from "@/components/tracks/EnhancedGamificationPanel";
 
 interface GamificationStats {
   totalPoints: number;
@@ -25,6 +26,7 @@ const Dashboard = () => {
   const [userName, setUserName] = useState<string>('');
   const [activeTab, setActiveTab] = useState('trilhas');
   const [gamificationStats, setGamificationStats] = useState<GamificationStats | null>(null);
+  const [session, setSession] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,6 +43,8 @@ const Dashboard = () => {
         return;
       }
 
+      setSession(session);
+
       // Usar a função RPC para buscar dados consolidados
       const { data: userDisplayData, error: rpcError } = await supabase
         .rpc('get_user_display_data', { user_uuid: session.user.id })
@@ -50,53 +54,10 @@ const Dashboard = () => {
         setUserName(userDisplayData.full_name);
         setUserProfile(userDisplayData);
       } else {
-        // Fallback: Tentar múltiplas fontes de dados
-        // 1. Buscar do questionário mais recente
-        const { data: questionnaireData } = await supabase
-          .from('questionnaire_results')
-          .select('full_name, email, age, city, state, phone, gender, profession')
-          .eq('user_id', session.user.id)
-          .order('completed_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        
-        if (questionnaireData && questionnaireData.full_name) {
-          setUserName(questionnaireData.full_name);
-          setUserProfile(questionnaireData);
-          
-          // Salvar no profile para próximas vezes
-          await supabase
-            .from('profiles')
-            .upsert({
-              user_id: session.user.id,
-              full_name: questionnaireData.full_name,
-              email: questionnaireData.email || session.user.email,
-              phone: questionnaireData.phone,
-              gender: questionnaireData.gender,
-              city: questionnaireData.city,
-              state: questionnaireData.state,
-              profession: questionnaireData.profession
-            }, {
-              onConflict: 'user_id'
-            });
-        } else {
-          // 2. Buscar da tabela profiles
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (profileData && profileData.full_name) {
-            setUserName(profileData.full_name);
-            setUserProfile(profileData);
-          } else {
-            // 3. Usar email como fallback
-            const emailName = session.user.email?.split('@')[0] || 'Usuário';
-            setUserName(emailName);
-            setUserProfile({ email: session.user.email });
-          }
-        }
+        // Fallback: usar email
+        const emailName = session.user.email?.split('@')[0] || 'Usuário';
+        setUserName(emailName);
+        setUserProfile({ email: session.user.email });
       }
 
       // Buscar resultado do questionário para trilha recomendada
@@ -109,20 +70,6 @@ const Dashboard = () => {
         .maybeSingle();
 
       if (result && result.track_type) {
-        // Verificar se já completou onboarding para esta trilha
-        const { data: preferences } = await supabase
-          .from('user_preferences')
-          .select('onboarding_completed')
-          .eq('user_id', session.user.id)
-          .eq('track_slug', result.track_type)
-          .maybeSingle();
-        
-        // Se não completou onboarding, sugerir mas não forçar redirecionamento
-        if (!preferences?.onboarding_completed) {
-          console.log('Onboarding não completado, mas permitindo acesso ao dashboard');
-          // Não redireciona automaticamente, deixa o usuário escolher
-        }
-        
         setRecommendedTrack(result.track_type);
       }
 
@@ -138,7 +85,6 @@ const Dashboard = () => {
 
   const loadGamificationStats = async (userId: string) => {
     try {
-      // Tentar calcular estatísticas de gamificação
       const { data, error } = await supabase.rpc('calculate_user_gamification_stats', {
         user_uuid: userId
       });
@@ -155,7 +101,6 @@ const Dashboard = () => {
           recentAchievements: []
         });
       } else {
-        // Fallback com dados padrão
         setGamificationStats({
           totalPoints: 0,
           currentLevel: 1,
@@ -168,7 +113,6 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error('Erro ao carregar gamificação:', error);
-      // Dados padrão em caso de erro
       setGamificationStats({
         totalPoints: 0,
         currentLevel: 1,
@@ -269,28 +213,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Gamification Progress Bar */}
-        {gamificationStats && (
-          <Card className="mb-6">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Progresso do Nível</span>
-                <Badge variant="secondary">
-                  Nível {gamificationStats.currentLevel} → {gamificationStats.currentLevel + 1}
-                </Badge>
-              </div>
-              <Progress 
-                value={((gamificationStats.totalPoints % 100))} 
-                className="h-2 mb-1"
-              />
-              <div className="flex justify-between text-xs text-gray-600">
-                <span>{gamificationStats.totalPoints % 100} pontos</span>
-                <span>{gamificationStats.pointsToNextLevel} para o próximo nível</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Tabs Navigation */}
         <div className="mb-8">
           <div className="border-b border-gray-200">
@@ -340,47 +262,16 @@ const Dashboard = () => {
                         </p>
                       </div>
                       
-                      <div className="grid grid-cols-3 gap-4 text-center">
-                        <div className="p-4 bg-blue-50 rounded-lg">
-                          <div className="text-2xl font-bold text-blue-600">
-                            {recommendedTrack === 'liberdade' ? '7' :
-                             recommendedTrack === 'equilibrio' ? '21' : '40'}
-                          </div>
-                          <div className="text-sm text-blue-600">Dias</div>
-                        </div>
-                        <div className="p-4 bg-green-50 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">15-30</div>
-                          <div className="text-sm text-green-600">Min/dia</div>
-                        </div>
-                        <div className="p-4 bg-purple-50 rounded-lg">
-                          <div className="text-2xl font-bold text-purple-600">100%</div>
-                          <div className="text-sm text-purple-600">Personalizada</div>
-                        </div>
-                      </div>
-                      
                       <div className="space-y-3">
                         <Button 
-                          onClick={() => navigate(`/onboarding?track=${recommendedTrack}`)} 
+                          onClick={() => navigate(`/track/${recommendedTrack}`)} 
                           size="lg"
                           className="w-full"
                         >
                           <TrendingUp className="w-4 h-4 mr-2" />
-                          Configurar e Iniciar Trilha
+                          Continuar Trilha
                         </Button>
-                        <div className="text-center">
-                          <Button 
-                            onClick={() => navigate(`/track/${recommendedTrack}`)} 
-                            variant="outline"
-                            size="sm"
-                          >
-                            Pular configuração e ir direto
-                          </Button>
-                        </div>
                       </div>
-                      
-                      <p className="text-xs text-muted-foreground">
-                        * Conteúdo baseado no seu resultado do teste e preferências pessoais
-                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -401,77 +292,12 @@ const Dashboard = () => {
           </div>
         )}
 
-        {activeTab === 'gamification' && gamificationStats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Stats Cards */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Nível Atual</p>
-                    <p className="text-2xl font-bold text-primary">{gamificationStats.currentLevel}</p>
-                    <p className="text-xs text-muted-foreground">{getLevelTitle(gamificationStats.currentLevel)}</p>
-                  </div>
-                  <Trophy className="w-8 h-8 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Pontos Totais</p>
-                    <p className="text-2xl font-bold text-green-600">{gamificationStats.totalPoints}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {gamificationStats.pointsToNextLevel} para próximo nível
-                    </p>
-                  </div>
-                  <Star className="w-8 h-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Sequência</p>
-                    <p className="text-2xl font-bold text-orange-600">{gamificationStats.daysStreak}</p>
-                    <p className="text-xs text-muted-foreground">dias consecutivos</p>
-                  </div>
-                  <Flame className="w-8 h-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Atividades</p>
-                    <p className="text-2xl font-bold text-blue-600">{gamificationStats.activitiesCompleted}</p>
-                    <p className="text-xs text-muted-foreground">completadas</p>
-                  </div>
-                  <Target className="w-8 h-8 text-blue-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Full Gamification Link */}
-            <div className="col-span-full">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <h3 className="text-lg font-semibold mb-2">Sistema Completo de Gamificação</h3>
-                  <p className="text-gray-600 mb-4">
-                    Veja todas suas conquistas, rankings e progresso detalhado
-                  </p>
-                  <Button onClick={() => navigate('/gamification')}>
-                    Ver Sistema Completo
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+        {activeTab === 'gamification' && session && (
+          <div className="max-w-4xl mx-auto">
+            <EnhancedGamificationPanel 
+              userId={session.user.id}
+              className="mb-6"
+            />
           </div>
         )}
       </main>
