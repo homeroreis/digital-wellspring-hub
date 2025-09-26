@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { Calendar, CheckCircle, User, MapPin, Briefcase } from "lucide-react";
+import { CheckCircle, User, MapPin, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
+import DateSelector from "@/components/ui/date-selector";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -193,33 +191,13 @@ const ProfileCompletionForm = ({ user, onComplete }: ProfileCompletionFormProps)
                 </div>
 
                 <div>
-                  <Label htmlFor="birth_date">Data de nascimento</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !formData.birth_date && "text-muted-foreground"
-                        )}
-                      >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {formData.birth_date ? format(formData.birth_date, "dd/MM/yyyy") : "Selecione sua data de nascimento"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={formData.birth_date}
-                        onSelect={(date) => handleChange("birth_date", date)}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <DateSelector
+                    id="birth_date"
+                    label="Data de nascimento"
+                    value={formData.birth_date}
+                    onChange={(date) => handleChange("birth_date", date)}
+                    placeholder="Selecione sua data de nascimento"
+                  />
                 </div>
 
                 <div>
