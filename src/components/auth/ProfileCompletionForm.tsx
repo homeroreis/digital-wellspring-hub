@@ -80,24 +80,45 @@ const ProfileCompletionForm = ({ user, onComplete }: ProfileCompletionFormProps)
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({
-          user_id: user.id,
-          full_name: user.user_metadata?.full_name || user.user_metadata?.name || "",
-          phone: formData.phone,
-          birth_date: formData.birth_date ? format(formData.birth_date, 'yyyy-MM-dd') : null,
-          gender: formData.gender,
-          marital_status: formData.marital_status,
-          city: formData.city,
-          state: formData.state,
-          profession: formData.profession,
-          education_level: formData.education_level,
-          how_found_us: formData.how_found_us,
-          accept_terms: true,
-        });
+      console.log('=== INÍCIO PROFILE COMPLETION SUBMIT ===');
+      console.log('User completo:', user);
+      console.log('Form data:', formData);
+      
+      const profileData = {
+        user_id: user.id,
+        full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "",
+        email: user.email,
+        phone: formData.phone,
+        birth_date: formData.birth_date ? format(formData.birth_date, 'yyyy-MM-dd') : null,
+        gender: formData.gender,
+        marital_status: formData.marital_status,
+        city: formData.city,
+        state: formData.state,
+        profession: formData.profession,
+        education_level: formData.education_level,
+        how_found_us: formData.how_found_us,
+        accept_terms: true,
+      };
+      
+      console.log('Dados que serão salvos:', profileData);
 
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from("profiles")
+        .upsert(profileData, { 
+          onConflict: 'user_id',
+          ignoreDuplicates: false 
+        })
+        .select();
+
+      console.log('Resposta do Supabase - data:', data);
+      console.log('Resposta do Supabase - error:', error);
+
+      if (error) {
+        console.error('Erro específico do Supabase:', error);
+        throw error;
+      }
+
+      console.log('=== PROFILE COMPLETION SALVO COM SUCESSO ===');
 
       toast({
         title: "Perfil completado!",
@@ -106,6 +127,10 @@ const ProfileCompletionForm = ({ user, onComplete }: ProfileCompletionFormProps)
 
       onComplete();
     } catch (error: any) {
+      console.error('=== ERRO NO PROFILE COMPLETION ===');
+      console.error('Erro completo:', error);
+      console.error('Erro message:', error.message);
+      console.error('Erro details:', error.details);
       toast({
         title: "Erro ao salvar",
         description: error.message,
