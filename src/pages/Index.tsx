@@ -68,105 +68,138 @@ const Index = () => {
           </div>
         </section>
 
-        <section className="py-12 bg-gradient-to-r from-secondary/5 to-accent/5 border-y border-secondary/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-16 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 border-y-2 border-primary/20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-pulse"></div>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center">
-              <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary-foreground px-4 py-2 rounded-full text-sm font-medium mb-4">
-                <span className="h-2 w-2 bg-secondary rounded-full animate-pulse"></span>
-                Avaliação Rápida
+              <div className="inline-flex items-center gap-3 bg-primary/20 text-primary-foreground px-6 py-3 rounded-full text-base font-bold mb-6 shadow-soft animate-bounce">
+                <span className="h-3 w-3 bg-primary rounded-full animate-pulse"></span>
+                ⚡ TESTE RÁPIDO DISPONÍVEL
               </div>
-              <h3 className="text-2xl font-bold mb-4">Teste Rápido</h3>
-              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Teste Rápido
+              </h2>
+              <p className="text-lg text-foreground/80 mb-8 max-w-2xl mx-auto leading-relaxed">
                 Versão simplificada de 4 perguntas para triagem rápida. 
                 Ideal para uma avaliação express de dependência digital.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              
+              <div className="flex flex-col items-center gap-6 mb-8">
                 <Button 
-                  variant="outline" 
+                  variant="missionary" 
                   size="lg"
                   onClick={() => navigate('/quick-test')}
-                  className="border-secondary hover:bg-secondary/10"
+                  className="text-xl px-12 py-6 font-bold shadow-elevated hover:scale-105 transition-all duration-300 animate-pulse hover:animate-none"
                 >
-                  Teste Rápido (2 min)
-                  <ArrowRight className="ml-2 w-4 h-4" />
+                  🚀 FAZER TESTE RÁPIDO (2 min)
+                  <ArrowRight className="ml-3 w-6 h-6" />
                 </Button>
-                <div className="text-sm text-muted-foreground">
-                  <span>✅ 4 perguntas estratégicas</span>
-                  <span className="mx-2">•</span>
-                  <span>📱 Otimizado para mobile</span>
-                  <span className="mx-2">•</span>
-                  <span>⚡ Resultado instantâneo</span>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center max-w-2xl">
+                  <div className="bg-card/80 backdrop-blur-sm p-4 rounded-xl shadow-soft">
+                    <div className="text-2xl mb-2">✅</div>
+                    <span className="text-sm font-medium text-foreground/90">4 perguntas estratégicas</span>
+                  </div>
+                  <div className="bg-card/80 backdrop-blur-sm p-4 rounded-xl shadow-soft">
+                    <div className="text-2xl mb-2">📱</div>
+                    <span className="text-sm font-medium text-foreground/90">Otimizado para mobile</span>
+                  </div>
+                  <div className="bg-card/80 backdrop-blur-sm p-4 rounded-xl shadow-soft">
+                    <div className="text-2xl mb-2">⚡</div>
+                    <span className="text-sm font-medium text-foreground/90">Resultado instantâneo</span>
+                  </div>
                 </div>
+              </div>
+              
+              <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-4 max-w-md mx-auto">
+                <span className="font-medium">💡 Perfeito para uso evangelístico:</span> Ferramenta rápida e impactante para abordar o tema com outras pessoas
               </div>
             </div>
           </div>
         </section>
 
-        <section className="py-16 bg-subtle">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-8">A realidade da nomofobia</h2>
-            <p className="text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
-              Nomofobia é o medo irracional de ficar sem acesso ao celular. Dados científicos revelam o impacto 
-              dessa condição moderna na população global.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-center max-w-4xl mx-auto">
+        <section className="py-20 bg-subtle relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5"></div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                A realidade da nomofobia
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                Nomofobia é o medo irracional de ficar sem acesso ao celular. Dados científicos revelam o impacto 
+                dessa condição moderna na população global.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center max-w-5xl mx-auto">
               {statistics.map((s, i) => (
-                <div key={i} className="text-center p-6 rounded-xl border bg-card hover:shadow-soft transition-smooth">
-                  <div className="text-4xl font-bold text-primary mb-2">{s.number}</div>
-                  <p className="text-muted-foreground">{s.text}</p>
+                <div key={i} className="text-center p-8 rounded-2xl border-2 border-primary/10 bg-card/80 backdrop-blur-sm hover:shadow-elevated hover:border-primary/20 transition-all duration-300 hover:scale-105">
+                  <div className="text-5xl md:text-6xl font-bold text-primary mb-4">{s.number}</div>
+                  <p className="text-muted-foreground text-lg">{s.text}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="py-16">
+        <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">Transforme sua vida digital</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Transforme sua vida digital
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {benefits.map((b, i) => (
-                <article key={i} className="bg-card p-8 rounded-xl shadow-soft hover:shadow-elevated transition-smooth">
-                  <div className="mb-4 text-accent">{b.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2">{b.title}</h3>
-                  <p className="text-muted-foreground">{b.description}</p>
+                <article key={i} className="bg-card/80 backdrop-blur-sm p-10 rounded-2xl shadow-soft hover:shadow-elevated border border-primary/10 hover:border-primary/20 transition-all duration-300 hover:scale-105 card-tilt">
+                  <div className="mb-6 text-primary p-3 bg-primary/10 rounded-xl w-fit">{b.icon}</div>
+                  <h3 className="text-2xl font-semibold mb-4 text-foreground">{b.title}</h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">{b.description}</p>
                 </article>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">Trilhas personalizadas</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-6 rounded-lg bg-card track-border-liberdade"> 
-                <h3 className="text-xl font-bold mb-1">🟢 Trilha Liberdade</h3>
-                <p className="font-medium mb-2">7 dias</p>
-                <p className="text-muted-foreground">Para quem já tem bons hábitos e quer fortalecê-los.</p>
+        <section className="py-20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-primary/5"></div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Trilhas personalizadas
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="p-8 rounded-2xl bg-card/80 backdrop-blur-sm track-border-liberdade hover:shadow-elevated transition-all duration-300 hover:scale-105"> 
+                <h3 className="text-2xl font-bold mb-2">🟢 Trilha Liberdade</h3>
+                <p className="font-semibold text-lg mb-3 text-primary">7 dias</p>
+                <p className="text-muted-foreground leading-relaxed">Para quem já tem bons hábitos e quer fortalecê-los.</p>
               </div>
-              <div className="p-6 rounded-lg bg-card track-border-equilibrio">
-                <h3 className="text-xl font-bold mb-1">🟡 Trilha Equilíbrio</h3>
-                <p className="font-medium mb-2">21 dias</p>
-                <p className="text-muted-foreground">Para quem percebe sinais de alerta e quer recuperar o controle.</p>
+              <div className="p-8 rounded-2xl bg-card/80 backdrop-blur-sm track-border-equilibrio hover:shadow-elevated transition-all duration-300 hover:scale-105">
+                <h3 className="text-2xl font-bold mb-2">🟡 Trilha Equilíbrio</h3>
+                <p className="font-semibold text-lg mb-3 text-primary">21 dias</p>
+                <p className="text-muted-foreground leading-relaxed">Para quem percebe sinais de alerta e quer recuperar o controle.</p>
               </div>
-              <div className="p-6 rounded-lg bg-card track-border-renovacao">
-                <h3 className="text-xl font-bold mb-1">🔴 Trilha Renovação</h3>
-                <p className="font-medium mb-2">40 dias</p>
-                <p className="text-muted-foreground">Para transformação profunda e mudança de hábitos enraizados.</p>
+              <div className="p-8 rounded-2xl bg-card/80 backdrop-blur-sm track-border-renovacao hover:shadow-elevated transition-all duration-300 hover:scale-105">
+                <h3 className="text-2xl font-bold mb-2">🔴 Trilha Renovação</h3>
+                <p className="font-semibold text-lg mb-3 text-primary">40 dias</p>
+                <p className="text-muted-foreground leading-relaxed">Para transformação profunda e mudança de hábitos enraizados.</p>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="py-16 bg-hero">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">Pronto para descobrir sua trilha?</h2>
-            <p className="text-lg text-foreground/85 mb-8">Faça o teste agora e receba um diagnóstico personalizado com ações práticas.</p>
-            <Button size="lg" variant="elevated" onClick={handleStartTest}>
+        <section className="py-20 bg-hero relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20"></div>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Pronto para descobrir sua trilha?</h2>
+            <p className="text-xl text-foreground/90 mb-12 leading-relaxed">Faça o teste agora e receba um diagnóstico personalizado com ações práticas.</p>
+            <Button size="lg" variant="elevated" onClick={handleStartTest} className="text-xl px-12 py-6 shadow-elevated hover:scale-105 transition-all duration-300">
               Iniciar meu teste gratuito
-              <ArrowRight className="ml-2" />
+              <ArrowRight className="ml-3 w-6 h-6" />
             </Button>
-            <p className="mt-3 text-sm text-foreground/80">⏱️ Leva 2 minutos • 🔒 100% confidencial • 🎯 Resultado imediato</p>
+            <p className="mt-6 text-foreground/80 bg-card/20 backdrop-blur-sm rounded-lg px-6 py-3 inline-block">
+              ⏱️ Leva 2 minutos • 🔒 100% confidencial • 🎯 Resultado imediato
+            </p>
           </div>
         </section>
       </main>

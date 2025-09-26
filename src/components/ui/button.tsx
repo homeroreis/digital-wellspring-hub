@@ -20,6 +20,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         hero: "bg-card text-card-foreground border border-border shadow-soft hover:bg-muted",
         elevated: "bg-primary text-primary-foreground shadow-elevated hover:bg-primary/95",
+        missionary: "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-elevated hover:from-primary/95 hover:to-accent/95 border border-primary/30",
       },
       size: {
         default: "h-10 px-4 py-2",
