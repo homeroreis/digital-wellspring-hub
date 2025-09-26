@@ -472,6 +472,7 @@ export type Database = {
           city: string | null
           created_at: string
           education_level: string | null
+          email: string | null
           full_name: string | null
           gender: string | null
           how_found_us: string | null
@@ -491,6 +492,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           education_level?: string | null
+          email?: string | null
           full_name?: string | null
           gender?: string | null
           how_found_us?: string | null
@@ -510,6 +512,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           education_level?: string | null
+          email?: string | null
           full_name?: string | null
           gender?: string | null
           how_found_us?: string | null
