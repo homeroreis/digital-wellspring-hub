@@ -98,7 +98,7 @@ const PersonalDataSection = ({ profile, user, onUpdate }: PersonalDataSectionPro
         <div className="space-y-2">
           <Label htmlFor="email">E-mail</Label>
           <p className="py-2 px-3 bg-muted/50 rounded-md text-muted-foreground">
-            {user?.email} (não editável)
+            {profile?.email || user?.email} (não editável)
           </p>
         </div>
 
