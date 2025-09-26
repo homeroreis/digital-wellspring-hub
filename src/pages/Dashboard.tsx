@@ -117,10 +117,10 @@ const Dashboard = () => {
           .eq('track_slug', result.track_type)
           .maybeSingle();
         
-        // Se não completou onboarding, redirecionar
+        // Se não completou onboarding, sugerir mas não forçar redirecionamento
         if (!preferences?.onboarding_completed) {
-          navigate(`/onboarding?track=${result.track_type}`, { replace: true });
-          return;
+          console.log('Onboarding não completado, mas permitindo acesso ao dashboard');
+          // Não redireciona automaticamente, deixa o usuário escolher
         }
         
         setRecommendedTrack(result.track_type);
@@ -358,14 +358,25 @@ const Dashboard = () => {
                         </div>
                       </div>
                       
-                      <Button 
-                        onClick={() => navigate(`/track/${recommendedTrack}`)} 
-                        size="lg"
-                        className="w-full"
-                      >
-                        <TrendingUp className="w-4 h-4 mr-2" />
-                        Iniciar Minha Trilha
-                      </Button>
+                      <div className="space-y-3">
+                        <Button 
+                          onClick={() => navigate(`/onboarding?track=${recommendedTrack}`)} 
+                          size="lg"
+                          className="w-full"
+                        >
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          Configurar e Iniciar Trilha
+                        </Button>
+                        <div className="text-center">
+                          <Button 
+                            onClick={() => navigate(`/track/${recommendedTrack}`)} 
+                            variant="outline"
+                            size="sm"
+                          >
+                            Pular configuração e ir direto
+                          </Button>
+                        </div>
+                      </div>
                       
                       <p className="text-xs text-muted-foreground">
                         * Conteúdo baseado no seu resultado do teste e preferências pessoais

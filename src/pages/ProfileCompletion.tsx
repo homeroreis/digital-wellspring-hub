@@ -21,19 +21,21 @@ const ProfileCompletion = () => {
 
       setUser(session.user);
 
-      // Check if profile is already complete
-      const { data: profile } = await supabase
+      // Check if profile is already complete with more thorough validation
+      const { data: profile, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", session.user.id)
-        .single();
+        .maybeSingle();
 
-      if (profile && profile.phone && profile.birth_date) {
-        // Profile already complete, redirect to dashboard
-        navigate("/dashboard");
+      // Only redirect if profile exists AND has required fields completed
+      if (!error && profile && profile.phone && profile.birth_date && profile.city && profile.profession) {
+        console.log('Perfil já completo, redirecionando para dashboard');
+        navigate("/dashboard", { replace: true });
         return;
       }
 
+      console.log('Perfil incompleto, mostrando formulário de completar');
       setLoading(false);
     };
 
@@ -41,7 +43,8 @@ const ProfileCompletion = () => {
   }, [navigate]);
 
   const handleCompletion = () => {
-    navigate("/dashboard");
+    console.log('Perfil completado com sucesso, redirecionando para dashboard');
+    navigate("/dashboard", { replace: true });
   };
 
   if (loading) {
