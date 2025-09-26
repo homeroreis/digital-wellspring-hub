@@ -147,8 +147,11 @@ const EquilibrioOnboarding: React.FC<EquilibrioOnboardingProps> = ({
   const handleComplete = async () => {
     setLoading(true);
     try {
-      // Save user preferences
-      await supabase
+      console.log('🚀 EquilibrioOnboarding: Iniciando salvamento...');
+      console.log('📋 Preferências do usuário:', userPreferences);
+
+      // Save user preferences with better error handling
+      const { data: prefData, error: prefError } = await supabase
         .from('user_preferences')
         .upsert({
           user_id: userId,
@@ -159,12 +162,21 @@ const EquilibrioOnboarding: React.FC<EquilibrioOnboardingProps> = ({
           notifications: userPreferences.notifications,
           onboarding_completed: true,
           onboarding_completed_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,track_slug'
         });
 
-      // Initialize track progress
-      await supabase
+      if (prefError) {
+        console.error('❌ Erro ao salvar preferências:', prefError);
+        throw prefError;
+      }
+
+      console.log('✅ Preferências salvas:', prefData);
+
+      // Initialize track progress with better error handling
+      const { data: progressData, error: progressError } = await supabase
         .from('user_track_progress')
-        .insert({
+        .upsert({
           user_id: userId,
           track_slug: 'equilibrio',
           current_day: 1,
@@ -172,19 +184,29 @@ const EquilibrioOnboarding: React.FC<EquilibrioOnboardingProps> = ({
           total_points: 0,
           streak_days: 0,
           is_active: true
+        }, {
+          onConflict: 'user_id,track_slug'
         });
+
+      if (progressError) {
+        console.error('❌ Erro ao inicializar progresso:', progressError);
+        throw progressError;
+      }
+
+      console.log('✅ Progresso inicializado:', progressData);
 
       toast({
         title: "Onboarding concluído!",
         description: "Sua Trilha Equilíbrio está pronta. Vamos começar!",
       });
 
+      console.log('✅ Onboarding concluído com sucesso!');
       onComplete();
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      console.error('❌ Erro ao completar onboarding:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível salvar suas preferências. Tente novamente.",
+        description: `Erro ao salvar preferências: ${error.message}`,
         variant: "destructive"
       });
     } finally {

@@ -79,22 +79,176 @@ export class PersonalizationService {
     dayNumber: number
   ): Promise<PersonalizedContent> {
     try {
+      console.log(`🎯 PersonalizationEngine: Gerando conteúdo personalizado`);
+      console.log(`📊 Parâmetros: userId=${userId}, trackType=${trackType}, dayNumber=${dayNumber}`);
+
       // Busca o perfil do usuário
       const profile = await this.getUserProfile(userId);
+      console.log('👤 Perfil do usuário:', profile);
       
       if (!profile) {
-        throw new Error('Perfil do usuário não encontrado');
+        console.log('⚠️ Perfil não encontrado, criando perfil básico');
+        await this.createBasicProfile(userId, trackType);
+        return this.getDefaultContent(trackType, dayNumber);
       }
 
       // Busca o conteúdo base para o dia
       const baseContent = await this.getBaseContent(trackType, dayNumber);
+      console.log('📋 Conteúdo base encontrado:', !!baseContent);
+      
+      // Se não há conteúdo base, retorna conteúdo padrão
+      if (!baseContent) {
+        console.log('⚠️ Conteúdo base não encontrado, retornando conteúdo padrão');
+        return this.getDefaultContent(trackType, dayNumber);
+      }
       
       // Personaliza o conteúdo
-      return this.personalizeContent(baseContent, profile, dayNumber);
+      const personalizedContent = this.personalizeContent(baseContent, profile, dayNumber);
+      console.log('✅ Conteúdo personalizado gerado com sucesso');
+      
+      return personalizedContent;
     } catch (error) {
-      console.error('Erro ao obter conteúdo personalizado:', error);
-      throw error;
+      console.error('❌ Erro ao obter conteúdo personalizado:', error);
+      // Return fallback content instead of throwing
+      console.log('🔄 Retornando conteúdo de fallback');
+      return this.getDefaultContent(trackType, dayNumber);
     }
+  }
+
+  /**
+   * Cria um perfil básico para usuários sem perfil
+   */
+  static async createBasicProfile(userId: string, trackType: string) {
+    try {
+      const basicProfile = {
+        id: userId,
+        testResults: {
+          totalScore: 50, // Default moderate score
+          categoryScores: {
+            comportamento: 12,
+            vida_cotidiana: 13,
+            relacoes: 12,
+            espiritual: 13,
+          },
+          trackType,
+          date: new Date().toISOString(),
+        },
+        progressData: {
+          currentDay: 1,
+          currentTrack: trackType,
+          completedActivities: [],
+          streak: 0,
+          totalPoints: 0,
+        },
+        preferences: {
+          focusAreas: ['anxiety', 'focus'],
+          availableTime: 30,
+          difficulty: 'medium',
+        },
+        personalData: {
+          fullName: 'Usuário'
+        },
+      };
+
+      // Insert basic profile data
+      await supabase.from('user_profiles').upsert({
+        user_id: userId,
+        test_results: basicProfile.testResults,
+        progress_data: basicProfile.progressData,
+        preferences: basicProfile.preferences,
+        demographics: basicProfile.personalData,
+      });
+
+      console.log('✅ Perfil básico criado:', basicProfile);
+      return basicProfile;
+    } catch (error) {
+      console.error('❌ Erro ao criar perfil básico:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Retorna conteúdo padrão quando não há personalização disponível
+   */
+  static getDefaultContent(trackType: string, dayNumber: number): PersonalizedContent {
+    const trackNames = {
+      liberdade: 'Liberdade',
+      equilibrio: 'Equilíbrio', 
+      renovacao: 'Renovação'
+    };
+
+    const defaultActivities: Activity[] = [
+      {
+        id: `default-reflection-${dayNumber}`,
+        type: 'reflection',
+        title: 'Reflexão Diária',
+        description: 'Momento de introspecção e autoconhecimento',
+        duration: 10,
+        instructions: [
+          'Encontre um lugar tranquilo',
+          'Respire profundamente 3 vezes',
+          'Reflita sobre suas motivações para mudança',
+          'Anote seus pensamentos no diário'
+        ],
+        difficulty: 1,
+        points: 20,
+        isRequired: true,
+        completed: false,
+      },
+      {
+        id: `default-practice-${dayNumber}`,
+        type: 'practice',
+        title: 'Prática do Dia',
+        description: 'Exercício prático para transformação de hábitos',
+        duration: 15,
+        instructions: [
+          'Defina um horário específico para a prática',
+          'Execute a atividade com atenção plena',
+          'Registre sua experiência',
+          'Celebre pequenas vitórias'
+        ],
+        difficulty: 2,
+        points: 30,
+        isRequired: true,
+        completed: false,
+      },
+      {
+        id: `default-devotional-${dayNumber}`,
+        type: 'devotional',
+        title: 'Momento Devocional',
+        description: 'Conexão espiritual e fortalecimento interior',
+        duration: 10,
+        instructions: [
+          'Leia o versículo do dia',
+          'Medite na reflexão apresentada',
+          'Faça a oração sugerida',
+          'Aplique a lição em sua vida'
+        ],
+        difficulty: 1,
+        points: 25,
+        isRequired: false,
+        completed: false,
+      }
+    ];
+
+    return {
+      dayNumber,
+      title: `Dia ${dayNumber} - Trilha ${trackNames[trackType] || trackType}`,
+      subtitle: `Sua jornada de transformação continua`,
+      description: `Continue firme em sua caminhada. Cada dia é uma nova oportunidade de crescimento e mudança positiva.`,
+      activities: defaultActivities,
+      mainFocus: 'Desenvolvimento pessoal e espiritual',
+      difficulty: 'medium',
+      estimatedTime: 35,
+      rewards: {
+        points: 75,
+      },
+      devotionalContent: {
+        verse: '"Tudo posso naquele que me fortalece." - Filipenses 4:13',
+        reflection: 'A força para transformar nossos hábitos digitais vem de uma fonte superior. Quando reconhecemos nossa dependência de Deus, encontramos o poder para vencer qualquer vício ou comportamento prejudicial.',
+        prayer: 'Senhor, obrigado por me dar forças para continuar essa jornada. Ajude-me a perseverar mesmo quando for difícil. Que eu possa encontrar em Ti a motivação para viver de forma mais equilibrada e saudável. Amém.',
+      }
+    };
   }
 
   /**
@@ -109,34 +263,32 @@ export class PersonalizationService {
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      // Buscar progresso da trilha
+      // Buscar dados de progresso
       const { data: progressData } = await supabase
         .from('user_track_progress')
         .select('*')
         .eq('user_id', userId)
-        .limit(1)
-        .single();
+        .eq('is_active', true)
+        .maybeSingle();
 
       // Buscar preferências
       const { data: preferencesData } = await supabase
         .from('user_preferences')
         .select('*')
         .eq('user_id', userId)
-        .limit(1)
-        .single();
+        .maybeSingle();
 
-      // Buscar perfil
+      // Buscar perfil adicional
       const { data: profileData } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
-        .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!questionnaireData) {
-        console.warn('Dados do questionário não encontrados para usuário:', userId);
+        console.log('Dados do questionário não encontrados');
         return null;
       }
 
@@ -148,29 +300,28 @@ export class PersonalizationService {
             comportamento: questionnaireData.comportamento_score,
             vida_cotidiana: questionnaireData.vida_cotidiana_score,
             relacoes: questionnaireData.relacoes_score,
-            espiritual: questionnaireData.espiritual_score
+            espiritual: questionnaireData.espiritual_score,
           },
           trackType: questionnaireData.track_type,
-          date: questionnaireData.created_at
+          date: questionnaireData.created_at,
         },
         progressData: {
           currentDay: progressData?.current_day || 1,
           currentTrack: progressData?.track_slug || questionnaireData.track_type,
           completedActivities: [],
           streak: progressData?.streak_days || 0,
-          totalPoints: progressData?.total_points || 0
+          totalPoints: progressData?.total_points || 0,
         },
         preferences: {
           focusAreas: preferencesData?.focus_areas || [],
           availableTime: 30,
-          difficulty: 'medium'
+          difficulty: preferencesData?.experience_level || 'medium',
         },
         personalData: {
+          fullName: questionnaireData.full_name,
           age: questionnaireData.age,
-          occupation: questionnaireData.profession,
-          location: questionnaireData.city,
-          fullName: questionnaireData.full_name || profileData?.full_name
-        }
+          location: `${questionnaireData.city || ''} ${questionnaireData.state || ''}`.trim(),
+        },
       };
     } catch (error) {
       console.error('Erro ao buscar perfil do usuário:', error);
@@ -189,11 +340,11 @@ export class PersonalizationService {
         .select('*')
         .eq('track_slug', trackType)
         .eq('day_number', dayNumber)
-        .single();
+        .maybeSingle();
 
       if (!dailyContent) {
-        console.warn(`Conteúdo não encontrado para ${trackType} dia ${dayNumber}`);
-        return this.getDefaultContent(trackType, dayNumber);
+        console.log(`Conteúdo diário não encontrado para ${trackType} dia ${dayNumber}`);
+        return null;
       }
 
       // Buscar atividades do dia
@@ -204,99 +355,80 @@ export class PersonalizationService {
         .order('sort_order');
 
       return {
-        title: dailyContent.title,
-        subtitle: dailyContent.objective,
-        description: dailyContent.objective,
+        ...dailyContent,
+        activities: activities || [],
         devotionalContent: {
           verse: dailyContent.devotional_verse,
           reflection: dailyContent.devotional_reflection,
-          prayer: dailyContent.devotional_prayer
-        },
-        mainActivity: {
-          title: dailyContent.main_activity_title,
-          content: dailyContent.main_activity_content
-        },
-        mainChallenge: {
-          title: dailyContent.main_challenge_title,
-          content: dailyContent.main_challenge_content
-        },
-        bonusActivity: dailyContent.bonus_activity_title ? {
-          title: dailyContent.bonus_activity_title,
-          content: dailyContent.bonus_activity_content
-        } : null,
-        maxPoints: dailyContent.max_points,
-        difficultyLevel: dailyContent.difficulty_level,
-        activities: activities || []
+          prayer: dailyContent.devotional_prayer,
+        }
       };
     } catch (error) {
-      console.error(`Erro ao buscar conteúdo base para ${trackType} dia ${dayNumber}:`, error);
-      return this.getDefaultContent(trackType, dayNumber);
+      console.error('Erro ao buscar conteúdo base:', error);
+      return null;
     }
   }
 
   /**
-   * Retorna conteúdo padrão
+   * Personaliza o conteúdo baseado no perfil do usuário
    */
-  private static getDefaultContent(trackType: string, dayNumber: number) {
+  private static personalizeContent(
+    baseContent: any,
+    profile: UserProfile,
+    dayNumber: number
+  ): PersonalizedContent {
+    const activities: Activity[] = baseContent.activities?.map((activity: any, index: number) => ({
+      id: `activity-${index}`,
+      type: activity.activity_type || 'practice',
+      title: activity.activity_title,
+      description: activity.activity_description,
+      duration: 15,
+      instructions: [
+        'Execute com atenção plena',
+        'Mantenha o foco no objetivo',
+        'Registre sua experiência'
+      ],
+      difficulty: activity.difficulty_level || 2,
+      points: activity.points_value || 20,
+      isRequired: activity.is_required !== false,
+      completed: false,
+    })) || [];
+
+    // Adicionar atividade devocional se não existir
+    if (!activities.some(a => a.type === 'devotional')) {
+      activities.unshift({
+        id: `devotional-${dayNumber}`,
+        type: 'devotional',
+        title: 'Momento Devocional',
+        description: 'Fortalecimento espiritual diário',
+        duration: 10,
+        instructions: [
+          'Leia o versículo',
+          'Reflita sobre a mensagem',
+          'Faça uma oração pessoal'
+        ],
+        difficulty: 1,
+        points: 15,
+        isRequired: true,
+        completed: false,
+      });
+    }
+
     return {
-      title: `${this.getTrackName(trackType)} - Dia ${dayNumber}`,
-      subtitle: 'Sua jornada de crescimento continua',
-      description: 'Conteúdo personalizado baseado em seu perfil e necessidades',
-      devotionalContent: {
-        verse: 'Por isso não tema, pois estou com você; não tenha medo, pois sou o seu Deus.',
-        reflection: 'Hoje é um novo dia para crescer e se transformar.',
-        prayer: 'Senhor, me ajude a ser consciente de minhas escolhas hoje.'
+      dayNumber,
+      title: baseContent.title || `Dia ${dayNumber}`,
+      subtitle: baseContent.objective || 'Sua jornada continua',
+      description: baseContent.main_activity_content || 'Atividades personalizadas para seu crescimento',
+      activities,
+      mainFocus: 'Crescimento pessoal e espiritual',
+      difficulty: this.calculateDifficulty(dayNumber, profile),
+      estimatedTime: activities.reduce((total, act) => total + act.duration, 0),
+      rewards: {
+        points: baseContent.max_points || 100,
+        achievement: this.checkForAchievement(dayNumber, profile.testResults.trackType),
       },
-      activities: [],
-      maxPoints: 100,
-      difficultyLevel: 1
+      devotionalContent: baseContent.devotionalContent,
     };
-  }
-
-  /**
-   * Obtém nome do track
-   */
-  private static getTrackName(trackType: string): string {
-    const trackNames: { [key: string]: string } = {
-      'renovacao': 'Renovação',
-      'liberdade': 'Liberdade',
-      'equilibrio': 'Equilíbrio'
-    };
-    
-    return trackNames[trackType] || 'Desenvolvimento';
-  }
-
-  /**
-   * Obtém duração do track
-   */
-  private static getTrackLength(trackType: string): number {
-    const trackLengths: { [key: string]: number } = {
-      'renovacao': 40,
-      'liberdade': 7,
-      'equilibrio': 21
-    };
-    
-    return trackLengths[trackType] || 21;
-  }
-
-  /**
-   * Método alias para compatibilidade com componentes existentes
-   */
-  static async getPersonalizedDay(userId: string, dayNumber: number): Promise<PersonalizedContent> {
-    // Busca o perfil para determinar o trackType
-    const profile = await this.getUserProfile(userId);
-    if (!profile) {
-      throw new Error('Perfil do usuário não encontrado');
-    }
-    
-    return this.getPersonalizedContent(userId, profile.testResults.trackType, dayNumber);
-  }
-
-  /**
-   * Método alias para compatibilidade - carrega perfil do usuário
-   */
-  static async loadUserProfile(userId: string): Promise<UserProfile | null> {
-    return this.getUserProfile(userId);
   }
 
   /**
@@ -372,215 +504,37 @@ export class PersonalizationService {
       }
 
       const trackSlug = profile.testResults.trackType;
-
-      // Atualizar ou inserir progresso da trilha
+      
+      // Atualizar progresso da trilha diretamente
       const { error } = await supabase
         .from('user_track_progress')
         .upsert({
           user_id: userId,
           track_slug: trackSlug,
-          current_day: dayNumber + 1,
-          total_points: (profile.progressData?.totalPoints || 0) + points,
-          streak_days: (profile.progressData?.streak || 0) + 1,
-          level_number: Math.floor(((profile.progressData?.totalPoints || 0) + points) / 100) + 1,
+          current_day: Math.max(dayNumber + 1, profile.progressData.currentDay + 1),
+          total_points: (profile.progressData.totalPoints || 0) + points,
+          streak_days: (profile.progressData.streak || 0) + 1,
+          level_number: Math.floor(((profile.progressData.totalPoints || 0) + points) / 100) + 1,
           last_activity_at: new Date().toISOString(),
           is_active: true
+        }, {
+          onConflict: 'user_id,track_slug'
         });
 
       if (error) {
-        console.error('Erro detalhado ao completar dia:', error);
+        console.error('Erro ao completar dia:', error);
         throw error;
       }
-      
-      console.log('Dia completado com sucesso:', { userId, dayNumber, points, trackSlug });
+
+      console.log(`Dia ${dayNumber} completado com sucesso`);
     } catch (error) {
       console.error('Erro ao completar dia:', error);
       throw error;
     }
   }
 
-  /**
-   * Personaliza o conteúdo baseado no perfil - INCLUINDO CONTEÚDO ESPIRITUAL
-   */
-  private static personalizeContent(
-    baseContent: any,
-    profile: UserProfile,
-    dayNumber: number
-  ): PersonalizedContent {
-    const userNeeds = this.analyzeUserNeeds(profile);
-    const difficulty = this.calculateDifficulty(dayNumber, profile);
-    const activities = this.personalizeActivities(baseContent.activities || [], profile, userNeeds, baseContent, dayNumber);
-    
-    return {
-      dayNumber,
-      title: this.personalizeText(baseContent.title || `Dia ${dayNumber}`, profile),
-      subtitle: this.personalizeText(baseContent.subtitle || '', profile),
-      description: this.personalizeText(baseContent.description || '', profile),
-      activities,
-      mainFocus: this.determineMainFocus(
-        dayNumber,
-        userNeeds.primaryIssue,
-        profile.testResults.trackType
-      ),
-      difficulty,
-      estimatedTime: this.calculateEstimatedTime(activities),
-      rewards: {
-        points: baseContent.maxPoints || this.calculatePoints(activities, difficulty),
-        achievement: this.checkForAchievement(dayNumber, profile.testResults.trackType)
-      },
-      // SEMPRE incluir conteúdo espiritual (base de todas as trilhas)
-      devotionalContent: {
-        verse: baseContent.devotionalContent?.verse || 'Não tenhas medo, eu estarei contigo.',
-        reflection: this.personalizeText(
-          baseContent.devotionalContent?.reflection || 'Momento de reflexão sobre nossa jornada.',
-          profile
-        ),
-        prayer: this.personalizeText(
-          baseContent.devotionalContent?.prayer || 'Senhor, me ajude a crescer hoje.',
-          profile
-        ),
-        audioUrl: baseContent.devotionalContent?.audioUrl
-      }
-    };
-  }
-
-  /**
-   * Personaliza atividades incluindo devotional como base
-   */
-  private static personalizeActivities(
-    baseActivities: any[],
-    profile: UserProfile,
-    userNeeds: any,
-    baseContent: any,
-    dayNumber: number
-  ): Activity[] {
-    const activities: Activity[] = [];
-
-    // 1. SEMPRE incluir atividade devocional/espiritual (base comum)
-    activities.push({
-      id: `devotional-${profile.testResults.trackType}-day${dayNumber}`,
-      type: 'devotional',
-      title: 'Momento Devocional',
-      description: 'Comece o dia com reflexão espiritual',
-      duration: 10,
-      contentUrl: baseContent.devotionalContent?.audioUrl,
-      instructions: [
-        'Encontre um local tranquilo',
-        'Leia o versículo do dia',
-        'Reflita sobre a mensagem',
-        'Faça uma oração pessoal'
-      ],
-      difficulty: 1,
-      points: 15,
-      isRequired: true,
-      completed: false
-    });
-
-    // 2. Atividade principal do track
-    if (baseContent.mainActivity) {
-      activities.push({
-        id: `main-${profile.testResults.trackType}-day${dayNumber}`,
-        type: 'exercise',
-        title: baseContent.mainActivity.title,
-        description: baseContent.mainActivity.content,
-        duration: 20,
-        instructions: ['Execute com atenção', 'Mantenha o foco'],
-        difficulty: baseContent.difficultyLevel || 2,
-        points: 25,
-        isRequired: true,
-        completed: false
-      });
-    }
-
-    // 3. Desafio do dia
-    if (baseContent.mainChallenge) {
-      activities.push({
-        id: `challenge-${profile.testResults.trackType}-day${dayNumber}`,
-        type: 'challenge',
-        title: baseContent.mainChallenge.title,
-        description: baseContent.mainChallenge.content,
-        duration: 15,
-        instructions: ['Aceite o desafio', 'Pratique durante o dia'],
-        difficulty: baseContent.difficultyLevel || 2,
-        points: 30,
-        isRequired: true,
-        completed: false
-      });
-    }
-
-    // 4. Atividade bônus (opcional)
-    if (baseContent.bonusActivity) {
-      activities.push({
-        id: `bonus-${profile.testResults.trackType}-day${dayNumber}`,
-        type: 'bonus',
-        title: baseContent.bonusActivity.title,
-        description: baseContent.bonusActivity.content,
-        duration: 10,
-        instructions: ['Atividade opcional para aprofundar o aprendizado'],
-        difficulty: 1,
-        points: 10,
-        isRequired: false,
-        completed: false
-      });
-    }
-
-    // 5. Adicionar atividades do banco se existirem
-    baseActivities.forEach((activity, index) => {
-      activities.push({
-        id: `db-activity-${index}`,
-        type: 'exercise',
-        title: activity.activity_title,
-        description: activity.activity_description,
-        duration: 15,
-        instructions: ['Siga as instruções'],
-        difficulty: 2,
-        points: activity.points_value,
-        isRequired: activity.is_required,
-        completed: false
-      });
-    });
-
-    return activities;
-  }
-
-  /**
-   * Analisa necessidades do usuário
-   */
-  private static analyzeUserNeeds(profile: UserProfile) {
-    const needs = {
-      primaryIssue: '' as string,
-      strengthAreas: [] as string[],
-      personalContext: {} as any
-    };
-
-    const scores = profile.testResults.categoryScores;
-
-    // Determina a categoria com maior pontuação
-    const entries = Object.entries(scores) as [keyof typeof scores, number][];
-    let maxCategory = entries[0][0];
-    for (const [category, value] of entries) {
-      if (value > scores[maxCategory]) {
-        maxCategory = category;
-      }
-    }
-    needs.primaryIssue = maxCategory;
-
-    // Identifica pontos fortes
-    if (scores.comportamento < 10) needs.strengthAreas.push('autocontrole');
-    if (scores.vida_cotidiana < 10) needs.strengthAreas.push('gestao_tempo');
-    if (scores.relacoes < 10) needs.strengthAreas.push('conexoes_humanas');
-    if (scores.espiritual < 10) needs.strengthAreas.push('vida_espiritual');
-
-    return needs;
-  }
-
-  /**
-   * Calcula dificuldade baseada no progresso
-   */
-  private static calculateDifficulty(
-    dayNumber: number,
-    profile: UserProfile
-  ): 'easy' | 'medium' | 'hard' {
+  // Utility methods
+  private static calculateDifficulty(dayNumber: number, profile: UserProfile): 'easy' | 'medium' | 'hard' {
     const trackLength = this.getTrackLength(profile.testResults.trackType);
     const progress = dayNumber / trackLength;
     
@@ -589,82 +543,38 @@ export class PersonalizationService {
     return 'hard';
   }
 
-  /**
-   * Personaliza texto substituindo variáveis
-   */
-  private static personalizeText(text: string, profile: UserProfile): string {
-    if (!text) return '';
-    
-    const replacements: { [key: string]: string } = {
-      '{{user_name}}': profile.personalData.fullName || 'amigo',
-      '{{track_name}}': this.getTrackName(profile.testResults.trackType),
-      '{{total_score}}': profile.testResults.totalScore.toString(),
-      '{{current_day}}': profile.progressData.currentDay.toString(),
-      '{{streak}}': profile.progressData.streak.toString()
+  private static getTrackLength(trackType: string): number {
+    const trackLengths: { [key: string]: number } = {
+      'renovacao': 40,
+      'liberdade': 7,
+      'equilibrio': 21
     };
-    
-    let result = text;
-    for (const [key, value] of Object.entries(replacements)) {
-      result = result.replace(new RegExp(key, 'g'), value);
-    }
-    
-    return result;
+    return trackLengths[trackType] || 21;
   }
 
-  /**
-   * Determina o foco principal do dia
-   */
-  private static determineMainFocus(
-    dayNumber: number,
-    primaryIssue: string,
-    trackType: string
-  ): string {
-    const trackLength = this.getTrackLength(trackType);
-    const phase = Math.ceil((dayNumber / trackLength) * 4);
-
-    const focusMap: { [key: number]: string } = {
-      1: 'Conscientização e Reconhecimento',
-      2: 'Ação e Mudança',
-      3: 'Integração e Hábito',
-      4: 'Maestria e Manutenção'
-    };
-
-    const baseFocus = focusMap[phase] || 'Desenvolvimento Contínuo';
-    return primaryIssue ? `${baseFocus} - foco em ${primaryIssue}` : baseFocus;
-  }
-
-  /**
-   * Calcula tempo estimado
-   */
-  private static calculateEstimatedTime(activities: Activity[]): number {
-    return activities.reduce((total, activity) => {
-      return total + (activity.isRequired ? activity.duration : 0);
-    }, 0);
-  }
-
-  /**
-   * Calcula pontos totais
-   */
-  private static calculatePoints(activities: Activity[], difficulty: string): number {
-    const multiplier = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 1.5 : 2;
-    return Math.round(
-      activities.reduce((total, activity) => total + activity.points, 0) * multiplier
-    );
-  }
-
-  /**
-   * Verifica se há conquista para o dia
-   */
   private static checkForAchievement(dayNumber: number, trackType: string): string | undefined {
     const achievementMilestones = {
       1: 'Primeiro Passo',
       7: 'Uma Semana de Dedicação',
       14: 'Duas Semanas de Crescimento',
       21: 'Três Semanas de Transformação',
-      30: 'Um Mês de Jornada',
-      40: 'Transformação Completa'
+      30: 'Um Mês de Progresso',
+      40: 'Jornada Completa'
     };
     
     return achievementMilestones[dayNumber as keyof typeof achievementMilestones];
+  }
+
+  // Alias methods for compatibility
+  static async getPersonalizedDay(userId: string, dayNumber: number): Promise<PersonalizedContent> {
+    const profile = await this.getUserProfile(userId);
+    if (!profile) {
+      return this.getDefaultContent('equilibrio', dayNumber);
+    }
+    return this.getPersonalizedContent(userId, profile.testResults.trackType, dayNumber);
+  }
+
+  static async loadUserProfile(userId: string): Promise<UserProfile | null> {
+    return this.getUserProfile(userId);
   }
 }

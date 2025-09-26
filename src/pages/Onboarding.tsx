@@ -22,38 +22,57 @@ const Onboarding = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log('🔍 Onboarding: Verificando autenticação...');
         const { data: { user }, error } = await supabase.auth.getUser();
         
         if (error || !user) {
+          console.log('❌ Usuário não autenticado, redirecionando para /auth');
           toast.error('Você precisa estar logado para acessar o onboarding');
           navigate('/auth');
           return;
         }
 
+        console.log('✅ Usuário autenticado:', user.id);
+        console.log('📋 Track slug do onboarding:', trackSlug);
+
         // Buscar resultado do teste do usuário para obter o score
-        const { data: testResult } = await supabase
+        const { data: testResult, error: testError } = await supabase
           .from('questionnaire_results')
-          .select('total_score')
+          .select('total_score, track_type')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
+        if (testError) {
+          console.error('❌ Erro ao buscar resultado do teste:', testError);
+        }
+
         if (!testResult) {
+          console.log('❌ Resultado do teste não encontrado, redirecionando para /test');
           toast.error('Resultado do teste não encontrado. Redirecionando...');
           navigate('/test');
           return;
         }
 
+        console.log('✅ Resultado do teste encontrado:', testResult);
+
         // Verificar se já completou o onboarding para esta trilha específica
-        const { data: preferences } = await supabase
-          .from('user_preferences' as any)
-          .select('onboarding_completed')
+        const { data: preferences, error: prefError } = await supabase
+          .from('user_preferences')
+          .select('onboarding_completed, track_slug')
           .eq('user_id', user.id)
           .eq('track_slug', trackSlug)
           .maybeSingle();
 
-        if (preferences && (preferences as any).onboarding_completed) {
+        if (prefError) {
+          console.error('❌ Erro ao buscar preferências:', prefError);
+        }
+
+        console.log('🔍 Preferências encontradas:', preferences);
+
+        if (preferences?.onboarding_completed) {
+          console.log('✅ Onboarding já concluído, redirecionando para trilha');
           toast.info('Onboarding já foi concluído, redirecionando para a trilha');
           navigate(`/track/${trackSlug}`);
           return;
@@ -61,8 +80,9 @@ const Onboarding = () => {
 
         setUser(user);
         setUserScore(testResult.total_score);
+        console.log('✅ Onboarding iniciado com sucesso');
       } catch (error) {
-        console.error('Erro ao verificar autenticação:', error);
+        console.error('❌ Erro geral no onboarding:', error);
         toast.error('Erro ao carregar página');
         navigate('/');
       } finally {
@@ -71,7 +91,7 @@ const Onboarding = () => {
     };
 
     checkAuth();
-  }, [navigate]);
+  }, [navigate, trackSlug]);
 
   if (loading) {
     return (
