@@ -26,10 +26,20 @@ export const useAdminAuth = (): AdminAuthState => {
         setUser(currentUser);
 
         if (currentUser) {
-          const { data: roleData } = await supabase.rpc('get_user_role', {
-            _user_id: currentUser.id
-          });
-          setRole((roleData as UserRole) || 'viewer');
+          // Verificar se é admin pelos emails diretos primeiro (sem consultas recursivas)
+          if (currentUser.email === 'jw@efeito.digital' || currentUser.email === 'johnasdmr@gmail.com') {
+            setRole('admin');
+          } else {
+            try {
+              const { data: roleData } = await supabase.rpc('get_user_role', {
+                _user_id: currentUser.id
+              });
+              setRole((roleData as UserRole) || 'viewer');
+            } catch (error) {
+              console.error('Error getting user role:', error);
+              setRole('viewer');
+            }
+          }
         } else {
           setRole(null);
         }
@@ -51,10 +61,15 @@ export const useAdminAuth = (): AdminAuthState => {
         
         if (currentUser) {
           try {
-            const { data: roleData } = await supabase.rpc('get_user_role', {
-              _user_id: currentUser.id
-            });
-            setRole((roleData as UserRole) || 'viewer');
+            // Verificar se é admin pelos emails diretos (sem recursão)
+            if (currentUser.email === 'jw@efeito.digital' || currentUser.email === 'johnasdmr@gmail.com') {
+              setRole('admin');
+            } else {
+              const { data: roleData } = await supabase.rpc('get_user_role', {
+                _user_id: currentUser.id
+              });
+              setRole((roleData as UserRole) || 'viewer');
+            }
           } catch (error) {
             console.error('Error getting user role:', error);
             setRole('viewer');
