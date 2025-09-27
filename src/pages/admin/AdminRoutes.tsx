@@ -8,6 +8,7 @@ import AdminCMS from './AdminCMS';
 import AdminUsers from './AdminUsers';
 import AdminLogs from './AdminLogs';
 import AdminSettings from './AdminSettings';
+import MediaUploadManager from '@/components/admin/MediaUploadManager';
 
 const AdminRoutes = () => {
   return (
@@ -41,6 +42,14 @@ const AdminRoutes = () => {
         element={
           <AdminLayout title="Sistema de Gestão de Conteúdo">
             <AdminCMS />
+          </AdminLayout>
+        } 
+      />
+      <Route 
+        path="/media" 
+        element={
+          <AdminLayout title="Gerenciamento de Mídia">
+            <MediaUploadManager />
           </AdminLayout>
         } 
       />

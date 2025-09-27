@@ -41,6 +41,7 @@ const AdminSidebar = () => {
     { title: 'Analytics', url: '/admin/analytics', icon: BarChart3, roles: ['admin', 'editor', 'viewer'] },
     { title: 'Relatórios', url: '/admin/reports', icon: FileText, roles: ['admin', 'editor', 'viewer'] },
     { title: 'CMS', url: '/admin/cms', icon: Database, roles: ['admin', 'editor'] },
+    { title: 'Mídia', url: '/admin/media', icon: Database, roles: ['admin', 'editor'] },
     { title: 'Usuários', url: '/admin/users', icon: Users, roles: ['admin'] },
     { title: 'Logs', url: '/admin/logs', icon: Activity, roles: ['admin'] },
     { title: 'Configurações', url: '/admin/settings', icon: Settings, roles: ['admin'] }
