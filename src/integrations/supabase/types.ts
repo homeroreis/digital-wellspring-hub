@@ -1091,39 +1091,48 @@ export type Database = {
       }
       user_preferences: {
         Row: {
+          chosen_area: string | null
           created_at: string
+          critical_area: string | null
           experience_level: string | null
           focus_areas: string[] | null
           id: string
           notifications: boolean | null
           onboarding_completed: boolean | null
           onboarding_completed_at: string | null
+          personal_goals: Json | null
           reminder_time: string | null
           track_slug: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          chosen_area?: string | null
           created_at?: string
+          critical_area?: string | null
           experience_level?: string | null
           focus_areas?: string[] | null
           id?: string
           notifications?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
+          personal_goals?: Json | null
           reminder_time?: string | null
           track_slug: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          chosen_area?: string | null
           created_at?: string
+          critical_area?: string | null
           experience_level?: string | null
           focus_areas?: string[] | null
           id?: string
           notifications?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
+          personal_goals?: Json | null
           reminder_time?: string | null
           track_slug?: string
           updated_at?: string
@@ -1461,6 +1470,20 @@ export type Database = {
       make_admin: {
         Args: { user_email: string }
         Returns: undefined
+      }
+      save_user_preferences: {
+        Args: {
+          p_experience_level?: string
+          p_focus_areas?: string[]
+          p_notifications?: boolean
+          p_reminder_time?: string
+          p_track_slug: string
+          p_user_id: string
+        }
+        Returns: {
+          message: string
+          success: boolean
+        }[]
       }
       update_content_metrics: {
         Args: { p_content_id: string; p_metric_type: string }

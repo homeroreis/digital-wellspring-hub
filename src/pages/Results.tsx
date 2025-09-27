@@ -105,7 +105,8 @@ const Results = () => {
           name: 'Liberdade',
           description: 'Focada em libertação de vícios digitais e estabelecimento de limites saudáveis',
           duration: '7 dias',
-          color: 'bg-green-500',
+          color: 'bg-[hsl(var(--track-liberdade))]',
+          textColor: 'text-white',
           icon: Shield,
           difficulty: 'Iniciante'
         };
@@ -114,7 +115,8 @@ const Results = () => {
           name: 'Equilíbrio',
           description: 'Balanceamento entre uso consciente da tecnologia e vida offline',
           duration: '21 dias',
-          color: 'bg-blue-500',
+          color: 'bg-[hsl(var(--track-equilibrio))]',
+          textColor: 'text-[hsl(var(--primary-foreground))]',
           icon: Target,
           difficulty: 'Intermediário'
         };
@@ -123,7 +125,8 @@ const Results = () => {
           name: 'Renovação',
           description: 'Transformação profunda de hábitos e renovação espiritual',
           duration: '40 dias',
-          color: 'bg-purple-500',
+          color: 'bg-[hsl(var(--track-renovacao))]',
+          textColor: 'text-white',
           icon: Sparkles,
           difficulty: 'Avançado'
         };
@@ -132,7 +135,8 @@ const Results = () => {
           name: 'Equilíbrio',
           description: 'Trilha padrão para desenvolvimento equilibrado',
           duration: '21 dias',
-          color: 'bg-blue-500',
+          color: 'bg-[hsl(var(--track-equilibrio))]',
+          textColor: 'text-[hsl(var(--primary-foreground))]',
           icon: Target,
           difficulty: 'Intermediário'
         };
@@ -145,45 +149,55 @@ const Results = () => {
         return {
           name: 'Comportamento com Smartphone',
           icon: Smartphone,
-          color: '#3B82F6',
+          color: 'hsl(217 91% 60%)', // Vibrant blue
+          bgClass: 'bg-blue-50 border-blue-200',
+          textClass: 'text-blue-700',
           description: 'Como você interage com seu dispositivo'
         };
       case 'vida_cotidiana':
         return {
           name: 'Impacto na Vida Cotidiana',
           icon: Clock,
-          color: '#10B981',
+          color: 'hsl(142 76% 36%)', // Vibrant green
+          bgClass: 'bg-green-50 border-green-200',
+          textClass: 'text-green-700',
           description: 'Efeitos no seu dia a dia e produtividade'
         };
       case 'relacoes':
         return {
           name: 'Impacto nas Relações',
           icon: Users,
-          color: '#F59E0B',
+          color: 'hsl(45 100% 52%)', // Vibrant yellow
+          bgClass: 'bg-yellow-50 border-yellow-200',
+          textClass: 'text-yellow-700',
           description: 'Influência nos seus relacionamentos'
         };
       case 'espiritual':
         return {
           name: 'Impacto Espiritual',
           icon: Sparkles,
-          color: '#8B5CF6',
+          color: 'hsl(0 72% 51%)', // Vibrant red
+          bgClass: 'bg-red-50 border-red-200',
+          textClass: 'text-red-700',
           description: 'Efeitos na sua vida espiritual'
         };
       default:
         return {
           name: category,
           icon: Target,
-          color: '#6B7280',
+          color: 'hsl(215 16% 47%)',
+          bgClass: 'bg-gray-50 border-gray-200',
+          textClass: 'text-gray-700',
           description: ''
         };
     }
   };
 
   const getRiskLevel = (score: number) => {
-    if (score >= 20) return { level: 'Alto Risco', color: 'text-red-600', bgColor: 'bg-red-50 border-red-200' };
-    if (score >= 15) return { level: 'Risco Moderado', color: 'text-yellow-600', bgColor: 'bg-yellow-50 border-yellow-200' };
-    if (score >= 10) return { level: 'Risco Baixo', color: 'text-blue-600', bgColor: 'bg-blue-50 border-blue-200' };
-    return { level: 'Muito Baixo Risco', color: 'text-green-600', bgColor: 'bg-green-50 border-green-200' };
+    if (score >= 20) return { level: 'Alto Risco', color: 'text-red-700 font-semibold', bgColor: 'bg-red-100 border-red-300' };
+    if (score >= 15) return { level: 'Risco Moderado', color: 'text-yellow-700 font-semibold', bgColor: 'bg-yellow-100 border-yellow-300' };
+    if (score >= 10) return { level: 'Risco Baixo', color: 'text-blue-700 font-semibold', bgColor: 'bg-blue-100 border-blue-300' };
+    return { level: 'Muito Baixo Risco', color: 'text-green-700 font-semibold', bgColor: 'bg-green-100 border-green-300' };
   };
 
   const getScoreMessage = (totalScore: number) => {
@@ -304,7 +318,7 @@ const Results = () => {
                 const CategoryIcon = categoryInfo.icon;
                 
                 return (
-                  <div key={category} className={`p-4 rounded-lg border-2 ${risk.bgColor}`}>
+                  <div key={category} className={`p-4 rounded-lg border-2 ${categoryInfo.bgClass}`}>
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <CategoryIcon 
@@ -312,7 +326,7 @@ const Results = () => {
                           style={{ color: categoryInfo.color }} 
                         />
                         <div>
-                          <h3 className="font-semibold text-sm">{categoryInfo.name}</h3>
+                          <h3 className={`font-semibold text-sm ${categoryInfo.textClass}`}>{categoryInfo.name}</h3>
                           <p className="text-xs text-muted-foreground">{categoryInfo.description}</p>
                         </div>
                       </div>
@@ -349,7 +363,7 @@ const Results = () => {
           <CardContent>
             <div className="flex items-center gap-6 p-6 bg-white rounded-lg border">
               <div className={`w-16 h-16 ${trackInfo.color} rounded-full flex items-center justify-center`}>
-                <trackInfo.icon className="w-8 h-8 text-white" />
+                <trackInfo.icon className={`w-8 h-8 ${trackInfo.textColor}`} />
               </div>
               
               <div className="flex-1">
