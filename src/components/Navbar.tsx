@@ -69,7 +69,21 @@ const Navbar = () => {
             <Link to="/test" aria-label="Começar teste">Fazer Teste</Link>
           </Button>
           {hasSession ? (
-            <Button size="sm" variant="outline" onClick={async () => { await supabase.auth.signOut(); }}>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={async () => { 
+                try {
+                  await supabase.auth.signOut(); 
+                } catch (error) {
+                  console.error('Logout error:', error);
+                  // Force logout by clearing local storage
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  window.location.href = '/';
+                }
+              }}
+            >
               Sair
             </Button>
           ) : (
