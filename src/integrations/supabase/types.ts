@@ -1489,6 +1489,23 @@ export type Database = {
         Args: { p_content_id: string; p_metric_type: string }
         Returns: undefined
       }
+      update_user_profile: {
+        Args: {
+          p_birth_date?: string
+          p_city?: string
+          p_education_level?: string
+          p_email?: string
+          p_full_name?: string
+          p_gender?: string
+          p_how_found_us?: string
+          p_income_range?: string
+          p_marital_status?: string
+          p_phone?: string
+          p_profession?: string
+          p_state?: string
+        }
+        Returns: Json
+      }
       upsert_track_content: {
         Args: {
           p_area: string

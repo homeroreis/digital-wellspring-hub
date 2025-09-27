@@ -16,6 +16,7 @@ import AccountSettingsSection from "@/components/profile/AccountSettingsSection"
 
 type ProfileData = {
   full_name?: string;
+  email?: string;
   phone?: string;
   birth_date?: string;
   gender?: string;
@@ -53,18 +54,30 @@ const Profile = () => {
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
+      const { data, error } = await supabase.rpc('get_user_display_data', {
+        user_uuid: userId
+      });
 
-      if (error && error.code !== "PGRST116") {
+      if (error) {
         throw error;
       }
 
-      setProfile(data || {});
+      // Converter os dados do RPC para o formato esperado
+      const profileData = data && data.length > 0 ? {
+        full_name: data[0].full_name,
+        email: data[0].email,
+        phone: data[0].phone,
+        birth_date: data[0].birth_date,
+        gender: data[0].gender,
+        city: data[0].city,
+        state: data[0].state,
+        profession: data[0].profession,
+        has_profile: data[0].has_profile
+      } : {};
+
+      setProfile(profileData);
     } catch (error: any) {
+      console.error('Erro ao carregar perfil:', error);
       toast({
         title: "Erro ao carregar perfil",
         description: error.message,
@@ -85,29 +98,31 @@ const Profile = () => {
       console.log('=== INÍCIO UPDATE PROFILE ===');
       console.log('User ID:', user.id);
       console.log('Updates recebidos:', updates);
-      console.log('Profile atual antes do update:', profile);
 
-      const dataToUpdate = {
-        user_id: user.id,
-        ...updates,
-      };
+      const { data, error } = await supabase.rpc('update_user_profile', {
+        p_full_name: updates.full_name || null,
+        p_email: updates.email || null,
+        p_phone: updates.phone || null,
+        p_birth_date: updates.birth_date || null,
+        p_gender: updates.gender || null,
+        p_marital_status: updates.marital_status || null,
+        p_city: updates.city || null,
+        p_state: updates.state || null,
+        p_profession: updates.profession || null,
+        p_education_level: updates.education_level || null,
+        p_income_range: updates.income_range || null,
+        p_how_found_us: updates.how_found_us || null
+      });
 
-      console.log('Dados que serão enviados para o Supabase:', dataToUpdate);
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .upsert(dataToUpdate, { 
-          onConflict: 'user_id',
-          ignoreDuplicates: false 
-        })
-        .select();
-
-      console.log('Resposta do Supabase - data:', data);
-      console.log('Resposta do Supabase - error:', error);
+      console.log('Resposta do RPC - data:', data);
+      console.log('Resposta do RPC - error:', error);
 
       if (error) {
-        console.error('Erro específico do Supabase:', error);
         throw error;
+      }
+
+      if (data && typeof data === 'object' && 'success' in data && !(data as any).success) {
+        throw new Error((data as any).error || 'Erro desconhecido');
       }
 
       console.log('Atualizando estado local...');
@@ -126,8 +141,6 @@ const Profile = () => {
     } catch (error: any) {
       console.error('=== ERRO NO UPDATE PROFILE ===');
       console.error('Erro completo:', error);
-      console.error('Erro message:', error.message);
-      console.error('Erro details:', error.details);
       console.log('=== FIM UPDATE PROFILE (ERRO) ===');
       toast({
         title: "Erro ao salvar",
