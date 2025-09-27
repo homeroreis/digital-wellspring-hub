@@ -29,7 +29,7 @@ export const useAdminAuth = (): AdminAuthState => {
           const { data: roleData } = await supabase.rpc('get_user_role', {
             _user_id: currentUser.id
           });
-          setRole(roleData || 'viewer');
+          setRole((roleData as UserRole) || 'viewer');
         } else {
           setRole(null);
         }
@@ -54,7 +54,7 @@ export const useAdminAuth = (): AdminAuthState => {
             const { data: roleData } = await supabase.rpc('get_user_role', {
               _user_id: currentUser.id
             });
-            setRole(roleData || 'viewer');
+            setRole((roleData as UserRole) || 'viewer');
           } catch (error) {
             console.error('Error getting user role:', error);
             setRole('viewer');

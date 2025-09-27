@@ -1393,14 +1393,6 @@ export type Database = {
         Args: { p_day_number: number; p_track_slug: string }
         Returns: Json
       }
-      current_user_is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      current_user_is_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
       generate_slug: {
         Args: { title: string }
         Returns: string
@@ -1433,22 +1425,23 @@ export type Database = {
       }
       get_user_role: {
         Args: { _user_id: string }
-        Returns: Database["public"]["Enums"]["app_role"]
+        Returns: string
       }
       get_week_days: {
         Args: { p_start_day?: number; p_track_slug: string }
         Returns: Json
       }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
       initialize_personalized_track: {
         Args: { p_track_type: string; p_user_id: string }
         Returns: undefined
+      }
+      is_admin_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_super_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       list_admin_users: {
         Args: Record<PropertyKey, never>
