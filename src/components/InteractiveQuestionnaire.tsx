@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 interface Answer {
   value: number;
@@ -33,6 +34,7 @@ const InteractiveQuestionnaire = () => {
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const questions = [
     // Categoria 1: Comportamento com o Smartphone (5 questões)
@@ -281,14 +283,24 @@ const InteractiveQuestionnaire = () => {
     setIsSubmitting(true);
     
     try {
+      console.log('🎯 Starting questionnaire submission...'); // Debug log
+      
       const results = calculateResults();
+      console.log('📊 Calculated results:', results); // Debug log
       
       // Save to Supabase
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.error('User not authenticated');
+        console.error('❌ User not authenticated');
+        toast({
+          title: "Erro de autenticação",
+          description: "Você precisa estar logado para salvar os resultados.",
+          variant: "destructive",
+        });
         return;
       }
+
+      console.log('✅ User authenticated, saving results for user:', user.id); // Debug log
 
       const { error } = await supabase
         .from('questionnaire_results')
@@ -305,14 +317,29 @@ const InteractiveQuestionnaire = () => {
         });
 
       if (error) {
-        console.error('Error saving questionnaire results:', error);
+        console.error('❌ Error saving questionnaire results:', error);
+        toast({
+          title: "Erro ao salvar resultados",
+          description: "Houve um problema ao salvar seus resultados. Tente novamente.",
+          variant: "destructive",
+        });
         return;
       }
 
+      console.log('✅ Results saved successfully, navigating to results page...'); // Debug log
+
       // Navigate to results page
-      navigate(`/results?score=${results.totalScore}&track=${results.trackType}&comportamento=${results.categoryScores.comportamento}&vida_cotidiana=${results.categoryScores.vida_cotidiana}&relacoes=${results.categoryScores.relacoes}&espiritual=${results.categoryScores.espiritual}&time=${results.totalTimeSpent}`);
+      const resultsUrl = `/results?score=${results.totalScore}&track=${results.trackType}&comportamento=${results.categoryScores.comportamento}&vida_cotidiana=${results.categoryScores.vida_cotidiana}&relacoes=${results.categoryScores.relacoes}&espiritual=${results.categoryScores.espiritual}&time=${results.totalTimeSpent}`;
+      console.log('🔗 Navigating to:', resultsUrl); // Debug log
+      
+      navigate(resultsUrl);
     } catch (error) {
-      console.error('Error submitting questionnaire:', error);
+      console.error('❌ Error submitting questionnaire:', error);
+      toast({
+        title: "Erro inesperado",
+        description: "Ocorreu um erro inesperado. Por favor, tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
