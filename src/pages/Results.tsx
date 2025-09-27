@@ -68,22 +68,17 @@ const Results = () => {
           });
         } else {
           // Get latest result from database
-          console.log('🔍 Loading results from database...'); // Debug log
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
-            console.log('✅ User authenticated:', user.id); // Debug log
-            
             // Get user display data for name
             const { data: userDisplayData } = await supabase
               .rpc('get_user_display_data', { user_uuid: user.id })
-              .maybeSingle();
+              .single();
             
             if (userDisplayData && userDisplayData.full_name) {
               setUserName(userDisplayData.full_name);
-              console.log('✅ User name loaded:', userDisplayData.full_name); // Debug log
             } else {
               setUserName(user.email?.split('@')[0] || 'Usuário');
-              console.log('ℹ️ Using fallback name'); // Debug log
             }
 
             const { data } = await supabase
@@ -92,10 +87,9 @@ const Results = () => {
               .eq('user_id', user.id)
               .order('created_at', { ascending: false })
               .limit(1)
-              .maybeSingle();
+              .single();
             
             if (data) {
-              console.log('✅ Database results loaded:', data); // Debug log
               setResultId(data.id);
               setResults({
                 totalScore: data.total_score,
@@ -108,11 +102,7 @@ const Results = () => {
                 trackType: data.track_type,
                 totalTimeSpent: data.total_time_spent
               });
-            } else {
-              console.log('ℹ️ No database results found'); // Debug log
             }
-          } else {
-            console.log('ℹ️ User not authenticated'); // Debug log
           }
         }
       } catch (error) {
