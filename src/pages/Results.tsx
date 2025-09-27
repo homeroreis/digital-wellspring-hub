@@ -18,9 +18,13 @@ import {
   ArrowRight,
   TrendingUp,
   Award,
-  Shield
+  Shield,
+  Printer,
+  RotateCcw,
+  Eye
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import PrintableResults from '@/components/PrintableResults';
 
 interface ResultsData {
   totalScore: number;
@@ -40,6 +44,8 @@ const Results = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [resultId, setResultId] = useState<string | null>(null);
   const [results, setResults] = useState<ResultsData | null>(null);
+  const [showPrintable, setShowPrintable] = useState(false);
+  const [userName, setUserName] = useState<string>('');
 
   useEffect(() => {
     const loadResults = async () => {
@@ -64,6 +70,17 @@ const Results = () => {
           // Get latest result from database
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
+            // Get user display data for name
+            const { data: userDisplayData } = await supabase
+              .rpc('get_user_display_data', { user_uuid: user.id })
+              .single();
+            
+            if (userDisplayData && userDisplayData.full_name) {
+              setUserName(userDisplayData.full_name);
+            } else {
+              setUserName(user.email?.split('@')[0] || 'Usuário');
+            }
+
             const { data } = await supabase
               .from('questionnaire_results')
               .select('*')
@@ -236,6 +253,23 @@ const Results = () => {
     navigate(`/onboarding?${params.toString()}`);
   };
 
+  const handlePrint = () => {
+    setShowPrintable(true);
+    setTimeout(() => {
+      window.print();
+      setShowPrintable(false);
+    }, 100);
+  };
+
+  const handleRetakeTest = () => {
+    navigate('/test');
+  };
+
+  const handleViewHistory = () => {
+    navigate('/dashboard');
+    // Set the active tab to history - this would need to be handled by dashboard
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
@@ -270,6 +304,17 @@ const Results = () => {
   const trackInfo = getTrackInfo(results.trackType);
   const scoreInfo = getScoreMessage(results.totalScore);
   const ScoreIcon = scoreInfo.icon;
+
+  // Show printable view
+  if (showPrintable) {
+    return (
+      <PrintableResults 
+        results={results}
+        userName={userName}
+        testDate={new Date().toLocaleDateString('pt-BR')}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4">
@@ -382,14 +427,46 @@ const Results = () => {
                 </div>
               </div>
               
-              <Button 
-                size="lg" 
-                onClick={handleContinue}
-                className="px-8"
-              >
-                Começar Jornada
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button 
+                  size="lg" 
+                  onClick={handleContinue}
+                  className="px-8"
+                >
+                  Começar Jornada
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handlePrint}
+                    className="flex-1"
+                  >
+                    <Printer className="w-4 h-4 mr-2" />
+                    Imprimir
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleRetakeTest}
+                    className="flex-1"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Refazer Teste
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleViewHistory}
+                    className="flex-1"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    Ver Histórico
+                  </Button>
+                </div>
+              </div>
             </div>
             
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">

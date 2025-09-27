@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, Trophy, Star, Flame, TrendingUp, Target } from "lucide-react";
 import EnhancedGamificationPanel from "@/components/tracks/EnhancedGamificationPanel";
+import TestHistoryPanel from "@/components/TestHistoryPanel";
 
 interface GamificationStats {
   totalPoints: number;
@@ -237,6 +238,16 @@ const Dashboard = () => {
               >
                 🏆 Gamificação
               </button>
+              <button
+                onClick={() => setActiveTab('historico')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'historico'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                📊 Histórico de Testes
+              </button>
             </nav>
           </div>
         </div>
@@ -298,6 +309,12 @@ const Dashboard = () => {
               userId={session.user.id}
               className="mb-6"
             />
+          </div>
+        )}
+
+        {activeTab === 'historico' && (
+          <div className="max-w-6xl mx-auto">
+            <TestHistoryPanel />
           </div>
         )}
       </main>
